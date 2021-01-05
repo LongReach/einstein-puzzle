@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <set>
+#include "House.h"
 
 /*
 The Englishman lives in the red house.
@@ -25,10 +26,6 @@ The Norwegian lives next to the blue house.
 The Blend smoker has a neighbor who drinks water.
 */
 
-using namespace std;
-
-const int TOTAL_HOUSES = 5;
-const int TOTAL_CATEGORIES = 6;
 
 string categories[] = { "address", "color", "nationality", "drink", "cigarette", "pet" };
 string addresses[] = { "1", "2", "3", "4", "5" };
@@ -38,104 +35,18 @@ string drinks[] = { "beer", "coffee", "milk", "tea", "water" };
 string cigarettes[] = { "Blend", "Bluemaster", "Dunhill", "Pall Mall", "Prince" };
 string pets[] = { "bird", "cat", "dog", "fish", "horse" };
 
-typedef map<string, int> CatMap;
-CatMap characteristic_to_category_map;
-
-class House {
-public:
-    House();
-    bool set_characteristic(string& the_char);
-    void merge(House* other);
-    bool get_remove_flag();
-    void print_info();
-
-    static vector<House*> houses;
-private:
-    string values[TOTAL_CATEGORIES];
-    bool remove_flag;
-};
-
-typedef map<string, House*> HouseMap;
-HouseMap characteristic_to_house_map;
-
-vector<House*> House::houses;
-
-House::House() {
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        this->values[i].assign("*");
-    }
-    this->remove_flag = false;
-    houses.push_back(this);
-}
-
-bool House::set_characteristic(string& the_char) {
-    CatMap::iterator it = characteristic_to_category_map.find(the_char);
-    if (it == characteristic_to_category_map.end()) {
-        cout << "cat idx not found\n";
-        return false;
-    }
-    int cat_idx = it->second;
-    cout << "cat idx is " << cat_idx << "\n";
-    this->values[cat_idx] = the_char;
-    characteristic_to_house_map[the_char] = this;
-    return true;
-}
-
-void House::merge(House* other) {
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        if (this->values[i] == "*") {
-            this->values[i].assign(other->values[i]);
-            if (other->values[i] != "*") {
-                characteristic_to_house_map[other->values[i]] = this;
-            }
-        }
-    }
-    other->remove_flag = true;
-}
-
-bool House::get_remove_flag() {
-    return this->remove_flag;
-}
-
-void House::print_info() {
-    cout << "House: ";
-    bool add_comma = false;
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        if (this->values[i] != "*") {
-            cout << (add_comma ? "," : "") << this->values[i];
-            add_comma = true;
-        }
-    }
-    cout << "\n";
-}
-
 void process_characteristics() {
     string* array_lookup[TOTAL_CATEGORIES] = { addresses, colors, nationalities, drinks, cigarettes, pets };
     for (int j = 0; j < TOTAL_CATEGORIES; j++) {
         for (int i = 0; i < TOTAL_HOUSES; i++) {
-            characteristic_to_category_map[array_lookup[j][i]] = j;
+            House::add_characteristic_and_category(array_lookup[j][i], j);
         }
     }
 }
 
-House* make_or_get_house(string& characteristic) {
-    House* house = NULL;
-    HouseMap::iterator it = characteristic_to_house_map.find(characteristic);
-    if (it != characteristic_to_house_map.end()) {
-        cout << "Retrieving house with characteristic " << characteristic << "\n";
-        house = it->second;
-    }
-    else {
-        cout << "Making house with characteristic " << characteristic << "\n";
-        house = new House();
-        house->set_characteristic(characteristic);
-    }
-    return house;
-}
-
 void connect_characteristics(string char1, string char2) {
-    House* house1 = make_or_get_house(char1);
-    House* house2 = make_or_get_house(char2);
+    House* house1 = House::make_or_get_house(char1);
+    House* house2 = House::make_or_get_house(char2);
     house1->merge(house2);
 }
 
