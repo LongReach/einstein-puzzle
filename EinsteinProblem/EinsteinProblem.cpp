@@ -41,7 +41,7 @@ void process_characteristics() {
     string* array_lookup[TOTAL_CATEGORIES] = { addresses, colors, nationalities, drinks, cigarettes, pets };
     for (int j = 0; j < TOTAL_CATEGORIES; j++) {
         for (int i = 0; i < TOTAL_HOUSES; i++) {
-            House::add_characteristic_and_category(array_lookup[j][i], j);
+            House::add_characteristic_and_category(array_lookup[j][i], j, i);
         }
     }
 }
@@ -59,19 +59,10 @@ void print_houses() {
         NeighborData* nd = *it;
         nd->print_info();
     }
-
-    House::print_unused_characteristics();
 }
 
 bool elimination_round() {
     bool change_made = false;
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        if (House::at_last_characteristic(i)) {
-            string remaining_char = House::get_last_characteristic(i);
-            House* house = House::make_or_get_house(remaining_char);
-            change_made = true;
-        }
-    }
     return change_made;
 }
 
@@ -106,6 +97,7 @@ bool neighbors_round() {
             string other_addr_str = to_string(other_addr);
             House* merge_house = House::make_or_get_house(other_addr_str);
             other_house->merge(merge_house);
+            House::disassociate(other_addr_str);
             change_made = (merge_house != other_house);
         }
     }
@@ -150,6 +142,8 @@ void connect_characteristics(string char1, string char2) {
     else {
         house1->merge(house2);
     }
+    House::disassociate(char1);
+    House::disassociate(char2);
     do_rounds();
 }
 
@@ -158,7 +152,48 @@ void set_neighbor(string my_char, string neighbor_char, int dir) {
     House::make_or_get_house(my_char);
     House::make_or_get_house(neighbor_char);
     NeighborData* data = new NeighborData(my_char, neighbor_char, dir);
+    House::disassociate(my_char);
+    House::disassociate(neighbor_char);
     do_rounds();
+}
+
+bool find_compatibility() {
+    set<House*> merge_candidates[100];
+    int total_houses = House::houses.size();
+
+    for (vector<House*>::iterator outer = House::houses.begin(); outer != House::houses.end(); outer++) {
+        House* house = *outer;
+        for (int addr = 1; addr <= 5; addr++) {
+            if (house->get_address() == -1) {
+                if (house->match_address(addr)) {
+                    string addr_str = to_string(addr);
+                    House* other_house = House::get_house(addr_str);
+                    if (!house->is_defunct() && house->can_merge(other_house)) {
+                        merge_candidates[house->get_id()].insert(other_house);
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < total_houses; i++) {
+        if (merge_candidates[i].size() >= 1) {
+            cout << "Merge candidates for: " << i << ": ";
+            for (set<House*>::iterator it = merge_candidates[i].begin(); it != merge_candidates[i].end(); it++) {
+                cout << (*it)->get_id() << " ";
+            }
+            cout << "\n";
+        }
+
+        if (merge_candidates[i].size() == 1) {
+            set<House*>::iterator it = merge_candidates[i].begin();
+            House* house = House::houses[i];
+            House* other_house = *it;
+            house->merge(other_house);
+            return true;
+        }
+    }
+    return false;
 }
 
 /*
@@ -198,5 +233,13 @@ int main()
     connect_characteristics("German", "Prince"); // The German smokes Prince.
     set_neighbor("Norwegian", "blue", 0); // The Norwegian lives next to the blue house.
     set_neighbor("Blend", "water", 0); // The Blend smoker has a neighbor who drinks water.
+
+   for (int i = 0; i < 3; i++) {
+        bool did_merge = find_compatibility();
+        print_houses();
+        bool neighbors_round_result = neighbors_round();
+        print_houses();
+        if (!did_merge && !neighbors_round_result) break;
+    }
 }
 

@@ -10,12 +10,13 @@ using namespace std;
 vector<House*> House::houses;
 HouseMap House::characteristic_to_house_map;
 CatMap House::characteristic_to_category_map;
-set<string> House::unused_characteristics[TOTAL_CATEGORIES];
+string House::known_characteristics[TOTAL_CATEGORIES][TOTAL_HOUSES];
+set<string> House::remaining_values[TOTAL_CATEGORIES]; // values that might yet be assigned
 int House::id_counter = 0;
 
 House::House() {
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        this->values[i].assign("*");
+    for (int j = 0; j < TOTAL_CATEGORIES; j++) {
+        this->values[j].assign("*");
     }
     this->merged_into = NULL;
     this->id = id_counter++;
@@ -36,7 +37,6 @@ bool House::set_characteristic(string& the_char) {
     //cout << "cat idx is " << cat_idx << "\n";
     this->values[cat_idx] = the_char;
     characteristic_to_house_map[the_char] = this;
-    int num_erased = unused_characteristics[cat_idx].erase(the_char); // this characteristic is no longer unused
     //assert(num_erased == 1);
 
     return true;
@@ -99,10 +99,9 @@ void House::merge(House* other) {
             }
         }
         else {
-            assert(other->values[i] == "*");
+            assert(other->values[i] == this->values[i] || other->values[i] == "*");
         }
     }
-    // TODO: make sure we pull in the neighbor information from the other
     other->merged_into = this;
 }
 
@@ -128,7 +127,12 @@ void House::print_info() {
     cout << "House  " << this->id << ": ";
     bool add_comma = false;
     for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        cout << (add_comma ? "," : "") << this->values[i];
+        if (this->values[i] == "*") {
+            cout << (add_comma ? "," : "") << "*";
+        }
+        else {
+            cout << (add_comma ? "," : "") << this->values[i];
+        }
         add_comma = true;
     }
     cout << "\n";
@@ -159,34 +163,20 @@ House* House::make_or_get_house(string& characteristic) {
     return house;
 }
 
-void House::add_characteristic_and_category(string& characteristic, int cat) {
+void House::add_characteristic_and_category(string& characteristic, int cat, int idx) {
     characteristic_to_category_map[characteristic] = cat;
-    unused_characteristics[cat].insert(characteristic);
+    known_characteristics[cat][idx] = characteristic;
+    remaining_values[cat].insert(characteristic);
 }
 
-bool House::at_last_characteristic(int cat) {
-    if (unused_characteristics[cat].size() == 1) {
-        return true;
+void House::disassociate(string& characteristic) {
+    CatMap::iterator it = characteristic_to_category_map.find(characteristic);
+    if (it == characteristic_to_category_map.end()) {
+        //cout << "cat idx not found\n";
+        assert(0);
     }
-    return false;
-}
-
-string House::get_last_characteristic(int cat) {
-    if (unused_characteristics[cat].size() == 1) {
-        set<string>::iterator it = unused_characteristics[cat].begin();
-        return *it;
-    }
-    return "*";
-}
-
-void House::print_unused_characteristics() {
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        cout << "cat " << i << ": ";
-        for (set<string>::iterator it = unused_characteristics[i].begin(); it != unused_characteristics[i].end(); it++) {
-            cout << *it << " ";
-        }
-        cout << "\n";
-    }
+    int cat_idx = it->second;
+    remaining_values[cat_idx].erase(characteristic);
 }
 
 vector<NeighborData*> NeighborData::pairs;
@@ -227,9 +217,19 @@ bool NeighborData::attempt_resolve() {
         House* left = (first_resolve_pass_num == 0) ? house1 : house2;
         House* right = (first_resolve_pass_num == 0) ? house2 : house1;
         string addr = to_string(first_resolve_addr);
-        left->set_characteristic(addr);
+        merge_characteristic(left, addr);
+        House::disassociate(addr);
         addr = to_string(first_resolve_addr+1);
-        right->set_characteristic(addr);
+        merge_characteristic(right, addr);
+        House::disassociate(addr);
+        if (this->dir == 0) {
+            this->dir = 1;
+            if (first_resolve_pass_num == 1) {
+                string swap = char_name[0];
+                char_name[0] = char_name[1];
+                char_name[1] = swap;
+            }
+        }
         return true;
     }
 
@@ -241,4 +241,15 @@ void NeighborData::print_info() {
     House* house2 = House::get_house(this->char_name[1]);
     cout << "Neighbors: " << house1->get_id() << " and " << house2->get_id() << " dir=" << this->dir << "\n";
 }
+
+void NeighborData::merge_characteristic(House* house, string& characteristic) {
+    House* other_house = House::get_house(characteristic);
+    if (other_house) {
+        house->merge(other_house);
+    }
+    else {
+        house->set_characteristic(characteristic);
+    }
+}
+
  

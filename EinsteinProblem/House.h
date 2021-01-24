@@ -44,10 +44,8 @@ public:
     // Returns the house object that contains the specific characteristic. If none found, make new House object.
     static House* make_or_get_house(string& characteristic);
     // Adds a characteristic and its category number to tracking, for easy lookup
-    static void add_characteristic_and_category(string& characteristic, int cat);
-    static bool at_last_characteristic(int cat);
-    static string get_last_characteristic(int cat);
-    static void print_unused_characteristics();
+    static void add_characteristic_and_category(string& characteristic, int cat, int idx);
+    static void disassociate(string& characteristic);
     
 private:
     string values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or "*", if none
@@ -59,7 +57,8 @@ public:
 private:
     static HouseMap characteristic_to_house_map; // maps a characteristic to a House object
     static CatMap characteristic_to_category_map; // maps a characteristic to a category number
-    static set<string> unused_characteristics[TOTAL_CATEGORIES];
+    static string known_characteristics[TOTAL_CATEGORIES][TOTAL_HOUSES];
+    static set<string> remaining_values[TOTAL_CATEGORIES]; // values that might yet be assigned
     static int id_counter; // For debugging purposes
 
 };
@@ -69,6 +68,8 @@ public:
     NeighborData(string &char1, string &char2, int d);
     bool attempt_resolve();
     void print_info();
+
+    static void merge_characteristic(House* house, string& characteristic);
 
     static vector<NeighborData*> pairs;
 
