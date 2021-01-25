@@ -6,11 +6,9 @@ Solution to a riddle attributed to Einstein
 
 ## Purpose
 
-There was no particular reason for me to solve this problem in C++. Python would have been a better choice. 
+At first, it seemed like Python might have been a better choice for solving this problem. On my first pass, I cursed myself for choosing a language that was clunkier to work in than Python. (I picked C++ just to get a little practice, since it hadn't been my "main" language in a couple years.)
 
-However, I picked C++ because I was a little rusty and wanted to get some practice in. Also, my solution might be more object-oriented than it needs to be, but that's just how I think in this particular language. A `struct` seldom lives long before I turn it into a `class`.
-
-Please note that I haven't finished this problem yet. Ran out of time, will return to it later. I just wanted to provide some evidence of my C++ background.
+However, after a first solution that got excessively complicated, I decided to redo this code and use a more brute force approach, simply maintaining a list of all possible valid combinations after each step in solving the puzzle. There are never more than hundreds of combinations in memory, and C++'s speed made cracking the puzzle lighting-fast.
 
 ## Description
 
@@ -20,7 +18,7 @@ Original text:
 
 *Let us assume that there are five houses of different colors next to each other on the same road. In each house lives a man of a different nationality. Every man has his favorite drink, his favorite brand of cigarettes, and keeps pets of a particular kind.*
 
-(Clearly, this is an old riddle, given the Eurocentrism and how everyone smokes.)
+(Clearly, this is an old riddle, given the maleness, Europeaness, and how everyone smokes.)
 
 ![](images/MenSmoking.jpg)  
 `"As your academic advisor here at 1950s MIT, I'd like to hear how your thesis is coming along."`
@@ -62,11 +60,18 @@ Note that each preference is unique to a single household, i.e. there's only one
 
 ## My solution
 
-I had vague memories of a board game that involved a similar process of elimination.
+My first attempted solution involved maintaining a giant table and eliminating possibilities as each step in the puzzle was executed. This worked up to a point, but when the program reached the "fish" step, there still wasn't a clear solution. The only way forward from there was to try all the remaining possibilities by brute force until the puzzle was solved.
 
-My solution was to proceed through the "facts" and build a set of theoretical houses. Thus, the first fact, `The Englishman lives in the red house`, would create a house that's red and has an English person inside. As theoretical houses are connected by common attributes, they are merged together.
+Therefore, it seemed to me that I'd be better off throwing away the overly complicated code I'd written and starting over, making the trying out of different combinations the heart of the new solution. 
 
-It's also important to keep track of neighbors, e.g. `The green house is just to the left of the white one`. When a particular house's address becomes known, that information can be propagated out to (or grabbed by) neighbors.
+So, that's how the current version of the program works, as described above.
+
+(the fish lives with the German)
+
+## Future possibilities
+
+* I want to add a feature that generates new Einstein puzzles at random.
+* I don't totally like the approach of trying different combinations. I think there's a more efficient way of solving the problem, one that starts by placing the fish in a particular house and applying the rules until one of them fails. If there is a failure, then the fish doesn't go in that house.
 
 ## How to run
 
