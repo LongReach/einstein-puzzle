@@ -5,73 +5,97 @@
 using namespace std;
 
 const int TOTAL_HOUSES = 5;
-const int TOTAL_CATEGORIES = 6;
+const int TOTAL_CATEGORIES = 5;
 
 typedef map<string, int> CatMap;
-class House;
-typedef map<string, House*> HouseMap;
+typedef map<string, int> CharMap;
 
 /*
-* Represents a theoretical house. One or more characteristics, such as nationality, pet, or drink, are present. When two different characteristics
-* are determined to be in the same actual house, the two theoretical houses will be combined into one. This process continues until it's known
-* where all the characteristics reside.
+* Represents a theoretical house. Zero or more characteristics, such as nationality, pet, or drink, are present.
+* Two theoretical houses at the same address can sometimes be merged together, yielding a new combined house.
+* This is possible if a) the two houses don't clash over any assigned characteristic and b) the characteristic
+* being merged in isn't already at a different house.
 * 
-* A characteristic is represented with a string, e.g. "beer", "green", or "Norwegian". Fortunately, there are no characteristics in different
-* categories that have the same name (e.g. no one keeps "milk" as a pet).
+* Characteristics are described with strings, e.g. "beer", "green", or "Norwegian". Inside a House instance, 
+* however, they are represented with integers, for fast comparison.
 * 
-* Each house is aware of its neighbors, if known. 
-* 
-* Setting address of house: 
 */
 class House {
 public:
     House();
-    // Assigns a characteristic to this house
-    bool set_characteristic(string& the_char);
-    int get_address();
-    bool match_address(int address);
-    bool can_merge(House* other);
-    // Merges two houses together. The other's contents are copied into this one, other is marked as no longer valid.
+    // Assigns a characteristic to this house, given category index (e.g. "color") and value index (e.g. "white")
+    bool set_characteristic(int cat_idx, int val_idx);
+    // Gets the characterisitic in given category as a string, or returns "*" if none assigned
+    string get_characteristic(int cat_idx);
+    // Returns true if the other can be merged. already_used_values is an array of sets containing the characteristics
+    // already used in each category.
+    bool can_merge(House* other, set<int> already_used_values[]);
+    // Merges the contents of the other house into this one. The caller must first test that merge is possible.
     void merge(House* other);
-    // Returns true if this House object has been merged into another. We keep the objects around so stale pointers
-    // can be updated
-    bool is_defunct(); 
-    House *resolve_pointer();
-    int get_id();
-    void print_info();
 
-    static House* get_house(string& characteristic);
-    // Returns the house object that contains the specific characteristic. If none found, make new House object.
-    static House* make_or_get_house(string& characteristic);
     // Adds a characteristic and its category number to tracking, for easy lookup
-    static void add_characteristic_and_category(string& characteristic, int cat);
-    static bool at_last_characteristic(int cat);
-    static string get_last_characteristic(int cat);
-    static void print_unused_characteristics();
+    static void add_characteristic_and_category(string& characteristic, int cat, int idx);
+    // Given a characteristic (e.g. "horse"), returns its category index and index.
+    static bool get_cat_and_idx_from_characteristic(string& characteristic, int* ret_cat, int* ret_idx);
     
 private:
-    string values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or "*", if none
-    House* merged_into; // pointer to the House object that this one was merged into
-    int id; // For debugging
+    int values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or -1, if none
 
-public:
-    static vector<House*> houses; // All House instances that are created are tracked here
 private:
-    static HouseMap characteristic_to_house_map; // maps a characteristic to a House object
     static CatMap characteristic_to_category_map; // maps a characteristic to a category number
-    static set<string> unused_characteristics[TOTAL_CATEGORIES];
-    static int id_counter; // For debugging purposes
+    static CharMap characteristic_to_idx_map; // maps a characteristic to a category number
+    static string known_characteristics[TOTAL_CATEGORIES][TOTAL_HOUSES]; // lookup for string values of characteristics
 
 };
 
-class NeighborData {
+/*
+* A Street represents five houses in order from left to right. No characteristic is present more than once on a
+* street. The class maintains a static list of all the possible valid streets it knows so far. As new relationship
+* information is added, such as neighbor relationships or characteristics colocated at a single house, combinations
+* that don't work (such as two different nationalities in one house) are discarded.
+* 
+* The class keeps track of characteristics that have already been assigned for quick lookup, so they won't be used
+* again.
+*/
+class Street;
+typedef vector<Street*> StreetList;
+
+class Street {
 public:
-    NeighborData(string &char1, string &char2, int d);
-    bool attempt_resolve();
+    Street();
+    // Assigns a characteristic to house at the given address.
+    void set_characteristic(int addr, string& characteristic);
+    // Combines this street with the other, if possible, returns new Street object. If not possible, returns NULL.
+    Street* combine(Street* other_street);
+    // Prints out pretty-formatted info about contents of houses on this street
     void print_info();
 
-    static vector<NeighborData*> pairs;
+    // Given a list of streets, delete all the Street objects
+    static void erase_street_list(StreetList& the_list);
+    // Given a list of streets, print them all.
+    // If no list given, use the static possible_streets list. If quiet = true, print less info.
+    static void print_street_list(StreetList* the_list = NULL, bool quiet = false);
+    // Given a list of new streets, each containing a different proposal of for what to add to the various houses,
+    // attempt to combine the proposals with existing list of possible streets, generating a new list of possible
+    // streets. This is the heart of the whole program.
+    //
+    // char1 and char2 are characteristics to mark as "already used", *after* the new set of possible streets has
+    // been made.
+    static void make_combos(StreetList &new_streets, string& char1, string& char2);
+    // Generate a set of proposals, given two characteristics located togther, then combine them with existing
+    // possible streets. Basically, we try each characteristic pair in each of the five houses.
+    static void add_new_characteristics(string& char1, string& char2);
+    // Given two characteristics that are neighbors, generate a set of proposals and combine them with existing
+    // possible streets. If dir == 1, the second neighbor is to the right of the first. If dir == 0, the left-right
+    // order isn't known.
+    // For dir == 1, there will be four proposals. For dir == 0, there will be eight.
+    static void add_neighbor_pair(string& char1, string& char2, int dir);
+    // Generates a single proposed house at given address and combines it with existing possible streets.
+    static void add_address(int address, string& the_char);
 
-    string char_name[2];
-    int dir; // 0 or 1
+private:
+    House houses[TOTAL_HOUSES];
+
+    static StreetList possible_streets; // all the possible streets that are known at this stage of the game
+    static set<int> values_present[TOTAL_CATEGORIES]; // characteristics that have been applied by this point in game
 };

@@ -7,238 +7,252 @@
 
 using namespace std;
 
-vector<House*> House::houses;
-HouseMap House::characteristic_to_house_map;
 CatMap House::characteristic_to_category_map;
-set<string> House::unused_characteristics[TOTAL_CATEGORIES];
-int House::id_counter = 0;
+CharMap House::characteristic_to_idx_map;
+string House::known_characteristics[TOTAL_CATEGORIES][TOTAL_HOUSES];
 
 House::House() {
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        this->values[i].assign("*");
+    for (int j = 0; j < TOTAL_CATEGORIES; j++) {
+        values[j] = -1;
     }
-    this->merged_into = NULL;
-    this->id = id_counter++;
-    houses.push_back(this);
 }
 
-bool House::set_characteristic(string& the_char) {
-    // TODO:
-    // If the characteristics is an address, make sure we propagate that info to neighbors
-
-    CatMap::iterator it = characteristic_to_category_map.find(the_char);
-    if (it == characteristic_to_category_map.end()) {
-        //cout << "cat idx not found\n";
-        assert(0);
-        return false;
-    }
-    int cat_idx = it->second;
-    //cout << "cat idx is " << cat_idx << "\n";
-    this->values[cat_idx] = the_char;
-    characteristic_to_house_map[the_char] = this;
-    int num_erased = unused_characteristics[cat_idx].erase(the_char); // this characteristic is no longer unused
-    //assert(num_erased == 1);
-
+bool House::set_characteristic(int cat_idx, int val_idx) {
+    assert(cat_idx >= 0 && cat_idx < TOTAL_CATEGORIES);
+    assert(val_idx >= 0 && val_idx < TOTAL_HOUSES);
+    values[cat_idx] = val_idx;
     return true;
 }
 
-int House::get_address() {
-    if (this->values[0] == "*") return -1;
-    return atoi(this->values[0].c_str());
+string House::get_characteristic(int cat_idx) {
+    assert(cat_idx >= 0 && cat_idx < TOTAL_CATEGORIES);
+    if (values[cat_idx] == -1) {
+        return "*";
+    }
+    return known_characteristics[cat_idx][values[cat_idx]];
 }
 
-bool House::match_address(int address) {
-    string addr_str = to_string(address);
-    if (this->values[0] != "*") {
-        // This house has an address
-        if (this->values[0] == addr_str) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    else {
-        // This house doesn't not have an address. Is there another house entry here?
-        House* house_at_addr = House::get_house(addr_str);
-        if (!house_at_addr) {
-            return true;
-        }
-        return (can_merge(house_at_addr));
-    }
-}
-
-bool House::can_merge(House* other) {
-    assert(!this->is_defunct());
-    other = other->resolve_pointer();
+bool House::can_merge(House* other, set<int> already_used_values[]) {
     if (this == other) {
         return true;
     }
     bool merge_allowed = true;
     for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        if (this->values[i] != "*") {
-            if (other->values[i] != "*") {
+        // what vals have been used in current category?
+        set<int>& vals_used_already = already_used_values[i];
+        if (this->values[i] != -1) {
+            if (this->values[i] != other->values[i] && other->values[i] != -1) {
                 merge_allowed = false;
+                break;
+            }
+        }
+        else {
+            // Is the value coming from the other already used on this street?
+            set<int>::iterator it = vals_used_already.find(other->values[i]);
+            if (it != vals_used_already.end()) {
+                // Yes, it's used already, so we can't put it here
+                merge_allowed = false;
+                break;
             }
         }
     }
     return merge_allowed;
 }
-    
+
 void House::merge(House* other) {
-    assert(!this->is_defunct());
-    other = other->resolve_pointer();
-    if (this == other) {
-        return;
-    }
     for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        if (this->values[i] == "*") {
-            this->values[i].assign(other->values[i]);
-            if (other->values[i] != "*") {
-                characteristic_to_house_map[other->values[i]] = this;
-            }
-        }
-        else {
-            assert(other->values[i] == "*");
+        if (this->values[i] == -1) {
+            this->values[i] = other->values[i];
         }
     }
-    // TODO: make sure we pull in the neighbor information from the other
-    other->merged_into = this;
 }
-
-bool House::is_defunct() {
-    return (this->merged_into != NULL);
-}
-
-House *House::resolve_pointer()
-{
-    House* ptr = this;
-    while (ptr->merged_into)
-    {
-        ptr = this->merged_into;
-    }
-    return ptr;
-}
-
-int House::get_id() {
-    return this->id;
-}
-
-void House::print_info() {
-    cout << "House  " << this->id << ": ";
-    bool add_comma = false;
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        cout << (add_comma ? "," : "") << this->values[i];
-        add_comma = true;
-    }
-    cout << "\n";
-}
-
-House* House::get_house(string& characteristic) {
-    House* house = NULL;
-    HouseMap::iterator it = characteristic_to_house_map.find(characteristic);
-    if (it != characteristic_to_house_map.end()) {
-        //cout << "Retrieving house with characteristic " << characteristic << "\n";
-        house = it->second;
-    }
-    return house;
-}
-
-House* House::make_or_get_house(string& characteristic) {
-    House* house = NULL;
-    HouseMap::iterator it = characteristic_to_house_map.find(characteristic);
-    if (it != characteristic_to_house_map.end()) {
-        //cout << "Retrieving house with characteristic " << characteristic << "\n";
-        house = it->second;
-    }
-    else {
-        //cout << "Making house with characteristic " << characteristic << "\n";
-        house = new House();
-        house->set_characteristic(characteristic);
-    }
-    return house;
-}
-
-void House::add_characteristic_and_category(string& characteristic, int cat) {
+    
+void House::add_characteristic_and_category(string& characteristic, int cat, int idx) {
+    assert(cat >= 0 && cat < TOTAL_CATEGORIES);
+    assert(idx >= 0 && idx < TOTAL_HOUSES);
     characteristic_to_category_map[characteristic] = cat;
-    unused_characteristics[cat].insert(characteristic);
+    characteristic_to_idx_map[characteristic] = idx;
+    known_characteristics[cat][idx] = characteristic;
 }
 
-bool House::at_last_characteristic(int cat) {
-    if (unused_characteristics[cat].size() == 1) {
-        return true;
-    }
-    return false;
-}
-
-string House::get_last_characteristic(int cat) {
-    if (unused_characteristics[cat].size() == 1) {
-        set<string>::iterator it = unused_characteristics[cat].begin();
-        return *it;
-    }
-    return "*";
-}
-
-void House::print_unused_characteristics() {
-    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
-        cout << "cat " << i << ": ";
-        for (set<string>::iterator it = unused_characteristics[i].begin(); it != unused_characteristics[i].end(); it++) {
-            cout << *it << " ";
-        }
-        cout << "\n";
-    }
-}
-
-vector<NeighborData*> NeighborData::pairs;
-
-NeighborData::NeighborData(string &char1, string &char2, int d) {
-    char_name[0] = char1;
-    char_name[1] = char2;
-    dir = d;
-    pairs.push_back(this);
-}
-
-bool NeighborData::attempt_resolve() {
-    int num_passes = (this->dir == 0) ? 2 : 1;
-
-    House* house1 = House::get_house(char_name[0]);
-    House* house2 = House::get_house(char_name[1]);
-    if (house1->get_address() != -1 && house2->get_address() != -1) {
+bool House::get_cat_and_idx_from_characteristic(string& characteristic, int* ret_cat, int* ret_idx) {
+    CatMap::iterator it1 = characteristic_to_category_map.find(characteristic);
+    if (it1 == characteristic_to_category_map.end()) {
         return false;
     }
-    int first_resolve_addr = -1;
-    int first_resolve_pass_num = -1;
-    int resolve_count = 0;
+    CharMap::iterator it2 = characteristic_to_idx_map.find(characteristic);
+    if (it2 == characteristic_to_idx_map.end()) {
+        return false;
+    }
+    *ret_cat = it1->second;
+    *ret_idx = it2->second;
+    return true;
+}
 
-    for (int pass = 0; pass < num_passes; pass++) {
-        House* left = (pass == 0) ? house1 : house2;
-        House* right = (pass == 0) ? house2 : house1;
-        for (int addr = 1; addr <= 4; addr++) {
-            bool match_l = left->match_address(addr);
-            bool match_r = right->match_address(addr + 1);
-            if (match_l && match_r) {
-                resolve_count++;
-                first_resolve_pass_num = pass;
-                first_resolve_addr = addr;
+
+StreetList Street::possible_streets;
+set<int> Street::values_present[TOTAL_CATEGORIES];
+
+// Helper function: takes string and pads out to twenty characters.
+string special_format_string(const char* c_str) {
+    int required_len = 20;
+    int len = strlen(c_str);
+    string out_str = c_str;
+    int padding = required_len - len;
+    if (padding < 0) padding = 0;
+    for (int i = 0; i < padding; i++) {
+        out_str.append(" ");
+    }
+    return out_str;
+}
+
+Street::Street() {
+}
+
+void Street::set_characteristic(int addr, string& characteristic) {
+    int cat_idx = -1;
+    int val_idx = -1;
+    bool success = House::get_cat_and_idx_from_characteristic(characteristic, &cat_idx, &val_idx);
+    if (success) {
+        houses[addr].set_characteristic(cat_idx, val_idx);
+    }
+}
+
+Street* Street::combine(Street* other_street) {
+    Street* new_street = new Street();
+    int success_count = 0;
+    for (int i = 0; i < TOTAL_HOUSES; i++) {
+        House* this_house = &this->houses[i];
+        House* other_house = &other_street->houses[i];
+        if (this_house->can_merge(other_house, values_present)) {
+            new_street->houses[i].merge(this_house);
+            new_street->houses[i].merge(other_house);
+            success_count++;
+        }
+    }
+    // The merge must succeed on all five houses
+    if (success_count == TOTAL_HOUSES) {
+        return new_street;
+    }
+    delete new_street;
+    return NULL;
+}
+
+void Street::print_info() {
+    for (int i = 0; i < TOTAL_HOUSES; i++) {
+        string addr = to_string(i + 1);
+        cout << special_format_string(addr.c_str());
+    }
+    cout << endl;
+    for (int i = 0; i < TOTAL_HOUSES; i++) {
+        cout << special_format_string("---------");
+    }
+    cout << endl;
+    for (int j = 0; j < TOTAL_CATEGORIES; j++) {
+        for (int i = 0; i < TOTAL_HOUSES; i++) {
+            string str_val = houses[i].get_characteristic(j);
+            cout << special_format_string(str_val.c_str());
+        }
+        cout << endl;
+    }
+}
+
+void Street::erase_street_list(StreetList& the_list) {
+    for (StreetList::iterator it = the_list.begin(); it != the_list.end(); it++) {
+        delete (*it);
+    }
+    the_list.clear();
+}
+
+void Street::print_street_list(StreetList* the_list, bool quiet) {
+    if (the_list == NULL) {
+        the_list = &possible_streets;
+    }
+    if (!quiet) {
+        cout << "Printing street list of size: " << the_list->size() << endl;
+        for (StreetList::iterator it = the_list->begin(); it != the_list->end(); it++) {
+            (*it)->print_info();
+            cout << endl;
+        }
+    }
+    cout << "Finished street list of size: " << the_list->size() << endl << endl;
+}
+
+void Street::make_combos(StreetList &new_streets, string& char1, string& char2) {
+    int cat1;
+    int val1;
+    House::get_cat_and_idx_from_characteristic(char1, &cat1, &val1);
+    int cat2;
+    int val2;
+    House::get_cat_and_idx_from_characteristic(char2, &cat2, &val2);
+
+    if (possible_streets.size() == 0) {
+        // No possible streets exist yet
+        possible_streets = new_streets;
+        values_present[cat1].insert(val1);
+        values_present[cat2].insert(val2);
+        return;
+    }
+
+    StreetList new_combos;
+    for (StreetList::iterator outer = possible_streets.begin(); outer != possible_streets.end(); outer++) {
+        for (StreetList::iterator inner = new_streets.begin(); inner != new_streets.end(); inner++) {
+            Street* new_street = (*outer)->combine(*inner);
+            if (new_street) {
+                new_combos.push_back(new_street);
             }
         }
     }
-    if (resolve_count == 1) {
-        House* left = (first_resolve_pass_num == 0) ? house1 : house2;
-        House* right = (first_resolve_pass_num == 0) ? house2 : house1;
-        string addr = to_string(first_resolve_addr);
-        left->set_characteristic(addr);
-        addr = to_string(first_resolve_addr+1);
-        right->set_characteristic(addr);
-        return true;
+    // Erase both the old list of possible streets and the list of proposals to merge in. Frees the memory.
+    erase_street_list(possible_streets);
+    possible_streets = new_combos;
+    erase_street_list(new_streets);
+    values_present[cat1].insert(val1);
+    values_present[cat2].insert(val2);
+}
+
+void Street::add_new_characteristics(string& char1, string& char2) {
+    // Generate five proposals
+    StreetList new_streets;
+    for (int i = 0; i < TOTAL_HOUSES; i++) {
+        Street* street = new Street();
+        street->set_characteristic(i, char1);
+        street->set_characteristic(i, char2);
+        new_streets.push_back(street);
+    }
+    make_combos(new_streets, char1, char2);
+    print_street_list(&possible_streets, true);
+}
+
+void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
+    // Generate four proposals (since neighbors are next to each other, it's four, not five).
+    StreetList new_streets;
+    for (int i = 0; i < TOTAL_HOUSES-1; i++) {
+        Street* street = new Street();
+        street->set_characteristic(i, char1);
+        street->set_characteristic(i+1, char2);
+        new_streets.push_back(street);
+    }
+    // If left-right relationship of neighbors not known, generate four more proposals
+    if (dir == 0) {
+        for (int i = 0; i < TOTAL_HOUSES - 1; i++) {
+            Street* street = new Street();
+            street->set_characteristic(i, char2);
+            street->set_characteristic(i + 1, char1);
+            new_streets.push_back(street);
+        }
     }
 
-    return false;
+    make_combos(new_streets, char1, char2);
+    print_street_list(&possible_streets, true);
 }
 
-void NeighborData::print_info() {
-    House* house1 = House::get_house(this->char_name[0]);
-    House* house2 = House::get_house(this->char_name[1]);
-    cout << "Neighbors: " << house1->get_id() << " and " << house2->get_id() << " dir=" << this->dir << "\n";
+void Street::add_address(int address, string& the_char) {
+    address--;
+    StreetList new_streets;
+    Street* street = new Street();
+    street->set_characteristic(address, the_char);
+    new_streets.push_back(street);
+    make_combos(new_streets, the_char, the_char);
+    print_street_list(&possible_streets, true);
 }
- 
