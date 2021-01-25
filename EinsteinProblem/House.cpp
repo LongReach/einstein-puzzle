@@ -179,18 +179,19 @@ void Street::print_street_list(StreetList* the_list, bool quiet) {
 }
 
 void Street::make_combos(StreetList &new_streets, string& char1, string& char2) {
-    int cat1;
-    int val1;
-    House::get_cat_and_idx_from_characteristic(char1, &cat1, &val1);
-    int cat2;
-    int val2;
-    House::get_cat_and_idx_from_characteristic(char2, &cat2, &val2);
+    int cat_idxs[2];
+    int val_idxs[2];
+    for (int i = 0; i < 2; i++) {
+        bool success = House::get_cat_and_idx_from_characteristic((i == 0) ? char1 : char2, &cat_idxs[i], &val_idxs[i]);
+        assert(success);
+    }
 
     if (possible_streets.size() == 0) {
         // No possible streets exist yet
         possible_streets = new_streets;
-        values_present[cat1].insert(val1);
-        values_present[cat2].insert(val2);
+        for (int i = 0; i < 2; i++) {
+            values_present[cat_idxs[i]].insert(val_idxs[i]);
+        }
         return;
     }
 
@@ -207,8 +208,9 @@ void Street::make_combos(StreetList &new_streets, string& char1, string& char2) 
     erase_street_list(possible_streets);
     possible_streets = new_combos;
     erase_street_list(new_streets);
-    values_present[cat1].insert(val1);
-    values_present[cat2].insert(val2);
+    for (int i = 0; i < 2; i++) {
+        values_present[cat_idxs[i]].insert(val_idxs[i]);
+    }
 }
 
 void Street::add_new_characteristics(string& char1, string& char2) {
@@ -225,6 +227,7 @@ void Street::add_new_characteristics(string& char1, string& char2) {
 }
 
 void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
+    assert(dir == 0 || dir == 1);
     // Generate four proposals (since neighbors are next to each other, it's four, not five).
     StreetList new_streets;
     for (int i = 0; i < TOTAL_HOUSES-1; i++) {
@@ -249,6 +252,7 @@ void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
 
 void Street::add_address(int address, string& the_char) {
     address--;
+    assert(address >= 0 && address < TOTAL_CATEGORIES);
     StreetList new_streets;
     Street* street = new Street();
     street->set_characteristic(address, the_char);
