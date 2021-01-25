@@ -42,6 +42,12 @@ bool PuzzleSolver::run_next_step() {
 }
 
 void PuzzleSolver::parse_rule(string& rule) {
+
+	// Some info about regex:
+	// https://www.softwaretestinghelp.com/regex-in-cpp/
+	// https://www.geeksforgeeks.org/smatch-regex-regular-expressions-in-c/
+	// https://cs.lmu.edu/~ray/notes/regex/
+
 	int first_space_idx = rule.find(' ');
 	assert(first_space_idx != string::npos);
 	string command = rule.substr(0, first_space_idx);
