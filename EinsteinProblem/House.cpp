@@ -89,6 +89,11 @@ bool House::get_cat_and_idx_from_characteristic(string& characteristic, int* ret
     return true;
 }
 
+string& House::get_characteristic_string(int cat_idx, int val_idx) {
+    assert(cat_idx >= 0 && cat_idx < TOTAL_CATEGORIES);
+    assert(val_idx >= 0 && val_idx < TOTAL_HOUSES);
+    return known_characteristics[cat_idx][val_idx];
+}
 
 StreetList Street::possible_streets;
 set<int> Street::values_present[TOTAL_CATEGORIES];
@@ -155,6 +160,17 @@ void Street::print_info() {
         }
         cout << endl;
     }
+}
+
+void Street::reset() {
+    erase_street_list(possible_streets);
+    for (int i = 0; i < TOTAL_CATEGORIES; i++) {
+        values_present[i].clear();
+    }
+}
+
+int Street::get_possible_streets_count() {
+    return possible_streets.size();
 }
 
 void Street::erase_street_list(StreetList& the_list) {

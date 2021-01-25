@@ -1,5 +1,6 @@
 #pragma once
 #include <set>
+#include <map>
 #include <string>
 
 using namespace std;
@@ -37,6 +38,7 @@ public:
     static void add_characteristic_and_category(string& characteristic, int cat, int idx);
     // Given a characteristic (e.g. "horse"), returns its category index and index.
     static bool get_cat_and_idx_from_characteristic(string& characteristic, int* ret_cat, int* ret_idx);
+    static string& get_characteristic_string(int cat_idx, int val_idx);
     
 private:
     int values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or -1, if none
@@ -70,6 +72,9 @@ public:
     // Prints out pretty-formatted info about contents of houses on this street
     void print_info();
 
+    static void reset();
+
+    static int get_possible_streets_count();
     // Given a list of streets, delete all the Street objects
     static void erase_street_list(StreetList& the_list);
     // Given a list of streets, print them all.
