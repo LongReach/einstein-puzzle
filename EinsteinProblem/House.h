@@ -5,11 +5,10 @@
 using namespace std;
 
 const int TOTAL_HOUSES = 5;
-const int TOTAL_CATEGORIES = 6;
+const int TOTAL_CATEGORIES = 5;
 
 typedef map<string, int> CatMap;
-class House;
-typedef map<string, House*> HouseMap;
+typedef map<string, int> CharMap;
 
 /*
 * Represents a theoretical house. One or more characteristics, such as nationality, pet, or drink, are present. When two different characteristics
@@ -27,52 +26,39 @@ class House {
 public:
     House();
     // Assigns a characteristic to this house
-    bool set_characteristic(string& the_char);
-    int get_address();
-    bool match_address(int address);
+    bool set_characteristic(int cat_idx, int val_idx);
     bool can_merge(House* other);
-    // Merges two houses together. The other's contents are copied into this one, other is marked as no longer valid.
     void merge(House* other);
-    // Returns true if this House object has been merged into another. We keep the objects around so stale pointers
-    // can be updated
-    bool is_defunct(); 
-    House *resolve_pointer();
-    int get_id();
-    void print_info();
 
-    static House* get_house(string& characteristic);
-    // Returns the house object that contains the specific characteristic. If none found, make new House object.
-    static House* make_or_get_house(string& characteristic);
     // Adds a characteristic and its category number to tracking, for easy lookup
     static void add_characteristic_and_category(string& characteristic, int cat, int idx);
-    static void disassociate(string& characteristic);
+    static bool get_cat_and_idx_from_characteristic(string& characteristic, int* ret_cat, int* ret_idx);
     
 private:
-    string values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or "*", if none
-    House* merged_into; // pointer to the House object that this one was merged into
-    int id; // For debugging
+    int values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or -1, if none
 
-public:
-    static vector<House*> houses; // All House instances that are created are tracked here
 private:
-    static HouseMap characteristic_to_house_map; // maps a characteristic to a House object
     static CatMap characteristic_to_category_map; // maps a characteristic to a category number
+    static CharMap characteristic_to_idx_map; // maps a characteristic to a category number
     static string known_characteristics[TOTAL_CATEGORIES][TOTAL_HOUSES];
-    static set<string> remaining_values[TOTAL_CATEGORIES]; // values that might yet be assigned
-    static int id_counter; // For debugging purposes
 
 };
 
-class NeighborData {
+class Street;
+typedef vector<Street*> StreetList;
+
+class Street {
 public:
-    NeighborData(string &char1, string &char2, int d);
-    bool attempt_resolve();
-    void print_info();
+    Street();
+    void set_characteristic(int addr, string& characteristic);
+    Street* combine(Street* other_street);
 
-    static void merge_characteristic(House* house, string& characteristic);
+    static void erase_street_list(StreetList& the_list);
+    static void make_combos(StreetList &new_streets);
+    static void add_new_characteristics(string& char1, string& char2);
 
-    static vector<NeighborData*> pairs;
+private:
+    House houses[TOTAL_HOUSES];
 
-    string char_name[2];
-    int dir; // 0 or 1
+    static StreetList possible_streets;
 };
