@@ -198,7 +198,7 @@ void Street::print_street_list(StreetList* the_list, bool quiet) {
     cout << "Finished street list of size: " << the_list->size() << endl << endl;
 }
 
-bool Street::have_used_all_values() {
+bool Street::have_used_enough_values() {
     for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
         if (values_present[cat].size() < TOTAL_HOUSES-1) return false;
     }
