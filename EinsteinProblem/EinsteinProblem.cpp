@@ -9,6 +9,7 @@
 #include <set>
 #include "House.h"
 #include "PuzzleSolver.h"
+#include "PuzzleMaker.h"
 
 /*
 Original Rules:
@@ -72,12 +73,27 @@ int main()
         "single 'fish'",
         "done"};
 
+#if 0
     PuzzleSolver solver;
     solver.add_steps(rules);
     while (solver.run_next_step()) {
 
     }
     Street::print_street_list();
+#endif
 
+#if 1
+    PuzzleMaker maker;
+    maker.make_model_street();
+    maker.make_puzzle();
+#endif
+
+#if 0
+    PuzzleMaker maker;
+    maker.make_model_street();
+    for (int i = 0; i < 10; i++) {
+        maker.make_rule();
+    }
+#endif
 }
 

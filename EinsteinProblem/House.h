@@ -1,6 +1,7 @@
 #pragma once
 #include <set>
 #include <map>
+#include <vector>
 #include <string>
 
 using namespace std;
@@ -67,6 +68,7 @@ public:
     Street();
     // Assigns a characteristic to house at the given address.
     void set_characteristic(int addr, string& characteristic);
+    string get_characteristic(int addr, int cat_idx);
     // Combines this street with the other, if possible, returns new Street object. If not possible, returns NULL.
     Street* combine(Street* other_street);
     // Prints out pretty-formatted info about contents of houses on this street
@@ -80,6 +82,7 @@ public:
     // Given a list of streets, print them all.
     // If no list given, use the static possible_streets list. If quiet = true, print less info.
     static void print_street_list(StreetList* the_list = NULL, bool quiet = false);
+    static bool have_used_all_values();
     // Given a list of new streets, each containing a different proposal of for what to add to the various houses,
     // attempt to combine the proposals with existing list of possible streets, generating a new list of possible
     // streets. This is the heart of the whole program.

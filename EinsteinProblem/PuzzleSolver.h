@@ -14,6 +14,7 @@ public:
 	// Each rule is a string in the form of: "COMMAND [ADDR] [CHARACTERISTIC1] [CHARACTERISTIC2] [DIR]"
 	// Valid commands are: "pair", "neighbor", "address", "single", or "done"
 	void add_steps(string steps[]);
+	void add_step(string& rule);
 	// Runs the next step that hasn't been run yet. Returns false if no more steps left to run.
 	bool run_next_step();
 

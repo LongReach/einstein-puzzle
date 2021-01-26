@@ -123,6 +123,10 @@ void Street::set_characteristic(int addr, string& characteristic) {
     }
 }
 
+string Street::get_characteristic(int addr, int cat_idx) {
+    return houses[addr].get_characteristic(cat_idx);
+}
+
 Street* Street::combine(Street* other_street) {
     Street* new_street = new Street();
     int success_count = 0;
@@ -194,6 +198,13 @@ void Street::print_street_list(StreetList* the_list, bool quiet) {
     cout << "Finished street list of size: " << the_list->size() << endl << endl;
 }
 
+bool Street::have_used_all_values() {
+    for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
+        if (values_present[cat].size() < TOTAL_HOUSES) return false;
+    }
+    return true;
+}
+
 void Street::make_combos(StreetList &new_streets, string& char1, string& char2) {
     int cat_idxs[2];
     int val_idxs[2];
@@ -239,7 +250,7 @@ void Street::add_new_characteristics(string& char1, string& char2) {
         new_streets.push_back(street);
     }
     make_combos(new_streets, char1, char2);
-    print_street_list(&possible_streets, true);
+    //print_street_list(&possible_streets, true);
 }
 
 void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
@@ -263,7 +274,7 @@ void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
     }
 
     make_combos(new_streets, char1, char2);
-    print_street_list(&possible_streets, true);
+    //print_street_list(&possible_streets, true);
 }
 
 void Street::add_address(int address, string& the_char) {
@@ -274,5 +285,5 @@ void Street::add_address(int address, string& the_char) {
     street->set_characteristic(address, the_char);
     new_streets.push_back(street);
     make_combos(new_streets, the_char, the_char);
-    print_street_list(&possible_streets, true);
+    //print_street_list(&possible_streets, true);
 }

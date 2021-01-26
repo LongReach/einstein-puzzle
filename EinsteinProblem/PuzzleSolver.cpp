@@ -31,6 +31,11 @@ void PuzzleSolver::add_steps(string steps[]) {
 	}
 }
 
+void PuzzleSolver::add_step(string &rule) {
+	rules.push_back(rule);
+	total_steps++;
+}
+
 bool PuzzleSolver::run_next_step() {
 	if (current_step >= total_steps) {
 		return false;
@@ -59,7 +64,7 @@ void PuzzleSolver::parse_rule(string& rule) {
 			assert(match.size() == 3);
 			string char1 = match.str(1);
 			string char2 = match.str(2);
-			cout << "Connecting " << char1 << " to " << char2 << endl;
+			//cout << "Connecting " << char1 << " to " << char2 << endl;
 			do_pairs_rule(char1, char2);
 		}
 		else {
@@ -79,7 +84,7 @@ void PuzzleSolver::parse_rule(string& rule) {
 				dir = atoi(match.str(3).c_str());
 			}
 			do_neighbors_rule(char1, char2, dir);
-			cout << "Neighbors " << char1 << " to " << char2 << " " << dir << endl;
+			//cout << "Neighbors " << char1 << " to " << char2 << " " << dir << endl;
 		}
 		else {
 			cout << "No match with: " << rule << endl;
@@ -93,7 +98,7 @@ void PuzzleSolver::parse_rule(string& rule) {
 			assert(match.size() == 3);
 			int addr = atoi(match.str(1).c_str());
 			string char1 = match.str(2);
-			cout << "Address of " << char1 << " to " << addr << endl;
+			//cout << "Address of " << char1 << " to " << addr << endl;
 			do_address_rule(addr, char1);
 		}
 		else {
@@ -107,7 +112,7 @@ void PuzzleSolver::parse_rule(string& rule) {
 		if (regex_search(parms, match, re) == true) {
 			assert(match.size() == 2);
 			string char1 = match.str(1);
-			cout << "Single " << char1 << endl;
+			//cout << "Single " << char1 << endl;
 			do_single_rule(char1);
 		}
 		else {
