@@ -51,11 +51,24 @@ void PuzzleMaker::make_puzzle() {
 			best_rules = rules_list;
 		}
 	}
+
+	PuzzleSolver solver;
+	solver.clear_steps();
+	solver.add_steps(best_rules);
+	while (solver.run_next_step());
+	Street::print_street_list();
+
+	vector<string> unused_vals;
+	Street::get_unused_values(unused_vals);
+	// Choose a random value to be the thing to be found
+	string target = (unused_vals.size() == 0) ? "*" : unused_vals[rand() % unused_vals.size()];
+	string last_rule = "single '" + target + "'";
+	best_rules.push_back(last_rule);
+
 	cout << "Best rules, size=" << best_rules.size() << endl;
 	for (vector<string>::iterator it = best_rules.begin(); it != best_rules.end(); it++) {
 		cout << *it << endl;
 	}
-	model_street.print_info();
 }
 
 bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter) {
@@ -100,15 +113,31 @@ string PuzzleMaker::make_rule() {
 		rule = rules_cache.front();
 		rules_cache.pop_front();
 		total_rules++;
+
+		int first_space_idx = rule.find(' ');
+		string command = rule.substr(0, first_space_idx);
+		if (command == "address") total_address_rules++;
+
 		return rule;
 	}
-	// Neighbors rules occur 1/3 of the time
-	// Address rules occur 1/5 of the time
-	// Pair rules are the remainder
-	int dice_roll = rand() % 30;
+
 	int which_rule = 0;
-	if (dice_roll < 10) which_rule = 1;
-	else if (dice_roll < 16) which_rule = 2;
+	for (int n = 0; n < 15; n++) {
+		// Neighbors rules occur 1/3 of the time
+		// Address rules occur 1/5 of the time
+		// Pair rules are the remainder
+		int dice_roll = rand() % 30;
+		which_rule = 0;
+		if (dice_roll < 10) which_rule = 1;
+		else if (dice_roll < 16) which_rule = 2;
+		if (which_rule == 2 && total_address_rules > 3) {
+			// we can only make so many address rules
+			continue;
+		}
+		else {
+			break;
+		}
+	}
 
 	if (which_rule == 0) {
 		// Make a pair rule
@@ -221,4 +250,12 @@ void PuzzleMaker::populate_rules_cache(vector<string>& good_rules, int num_skip)
 			rules_cache.push_back(good_rules[i]);
 		}
 	}
+}
+
+void PuzzleMaker::print_rules(vector<string>& good_rules, bool english_format) {
+
+}
+
+string PuzzleMaker::get_rule_in_english(string& rule) {
+	return "";
 }

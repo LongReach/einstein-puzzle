@@ -44,6 +44,9 @@ private:
 	// 'num_skip' specifies how many rules in the sequence to randomly omit from being cached.
 	void populate_rules_cache(vector<string>& good_rules, int num_skip);
 
+	void print_rules(vector<string>& good_rules, bool english_format = false);
+	string get_rule_in_english(string& rule);
+
 	Street model_street;
 	// Count of how often a particular characteristic has been used in generating latest sequence of rules.
 	map<string, int> usage_count;

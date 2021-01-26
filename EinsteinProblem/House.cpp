@@ -205,6 +205,16 @@ bool Street::have_used_enough_values() {
     return true;
 }
 
+void Street::get_unused_values(vector<string>& ret_list) {
+    for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
+        for (int val_idx = 0; val_idx < TOTAL_HOUSES; val_idx++) {
+            if (values_present[cat].find(val_idx) == values_present[cat].end()) {
+                ret_list.push_back(House::get_characteristic_string(cat, val_idx));
+            }
+        }
+    }
+}
+
 void Street::make_combos(StreetList &new_streets, string& char1, string& char2) {
     int cat_idxs[2];
     int val_idxs[2];

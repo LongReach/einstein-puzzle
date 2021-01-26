@@ -29,13 +29,17 @@ public:
 	// Each rule is a string in the form of: "COMMAND [ADDR] [CHARACTERISTIC1] [CHARACTERISTIC2] [DIR]"
 	// Valid commands are: "pair", "neighbor", "address", "single", or "done"
 	void add_steps(string steps[]);
+	void add_steps(vector<string>& steps);
 	void add_step(string& rule);
 	// Runs the next step that hasn't been run yet. Returns false if no more steps left to run.
 	bool run_next_step();
 
+	// Returns false if parse failed
+	static bool parse_rule(string &rule, string &ret_command, string& ret_char1, string& ret_char2, int& ret_num);
+
 private:
 	// Parse and execute a rule.
-	void parse_rule(string& rule);
+	void execute_rule(string& rule);
 	// Functions for executing rule of particular type.
 	void do_pairs_rule(string& char1, string& char2);
 	void do_neighbors_rule(string& char1, string& char2, int dir);

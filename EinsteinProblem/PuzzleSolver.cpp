@@ -31,6 +31,12 @@ void PuzzleSolver::add_steps(string steps[]) {
 	}
 }
 
+void PuzzleSolver::add_steps(vector<string>& steps) {
+	for (vector<string>::iterator it = steps.begin(); it != steps.end(); it++) {
+		add_step(*it);
+	}
+}
+
 void PuzzleSolver::add_step(string &rule) {
 	rules.push_back(rule);
 	total_steps++;
@@ -41,13 +47,12 @@ bool PuzzleSolver::run_next_step() {
 		return false;
 	}
 	string rule = rules[current_step];
-	parse_rule(rule);
+	execute_rule(rule);
 	current_step++;
 	return true;
 }
 
-void PuzzleSolver::parse_rule(string& rule) {
-
+bool PuzzleSolver::parse_rule(string &rule, string& ret_command, string& ret_char1, string& ret_char2, int& ret_num) {
 	// Some info about regex:
 	// https://www.softwaretestinghelp.com/regex-in-cpp/
 	// https://www.geeksforgeeks.org/smatch-regex-regular-expressions-in-c/
@@ -56,20 +61,20 @@ void PuzzleSolver::parse_rule(string& rule) {
 	int first_space_idx = rule.find(' ');
 	assert(first_space_idx != string::npos);
 	string command = rule.substr(0, first_space_idx);
+	ret_command = command;
 	string parms = rule.substr(first_space_idx);
 	if (command == "pair") {
 		regex re(" *'([a-zA-Z ]+)' '([a-zA-Z ]+)'");
 		smatch match;
 		if (regex_search(parms, match, re) == true) {
 			assert(match.size() == 3);
-			string char1 = match.str(1);
-			string char2 = match.str(2);
-			//cout << "Connecting " << char1 << " to " << char2 << endl;
-			do_pairs_rule(char1, char2);
+			ret_char1 = match.str(1);
+			ret_char2 = match.str(2);
+			return true;
 		}
 		else {
 			cout << "No match with: " << rule << endl;
-			assert(false);
+			return false;
 		}
 	}
 	else if (command == "neighbor") {
@@ -77,18 +82,17 @@ void PuzzleSolver::parse_rule(string& rule) {
 		smatch match;
 		if (regex_search(parms, match, re) == true) {
 			assert(match.size() == 3 || match.size() == 4);
-			string char1 = match.str(1);
-			string char2 = match.str(2);
-			int dir = 0;
+			ret_char1 = match.str(1);
+			ret_char2 = match.str(2);
+			ret_num = 0;
 			if (match.size() == 4) {
-				dir = atoi(match.str(3).c_str());
+				ret_num = atoi(match.str(3).c_str());
 			}
-			do_neighbors_rule(char1, char2, dir);
-			//cout << "Neighbors " << char1 << " to " << char2 << " " << dir << endl;
+			return true;
 		}
 		else {
 			cout << "No match with: " << rule << endl;
-			assert(false);
+			return false;
 		}
 	}
 	else if (command == "address") {
@@ -96,14 +100,13 @@ void PuzzleSolver::parse_rule(string& rule) {
 		smatch match;
 		if (regex_search(parms, match, re) == true) {
 			assert(match.size() == 3);
-			int addr = atoi(match.str(1).c_str());
-			string char1 = match.str(2);
-			//cout << "Address of " << char1 << " to " << addr << endl;
-			do_address_rule(addr, char1);
+			ret_num = atoi(match.str(1).c_str());
+			ret_char1 = match.str(2);
+			return true;
 		}
 		else {
 			cout << "No match with: " << rule << endl;
-			assert(false);
+			return false;
 		}
 	}
 	else if (command == "single") {
@@ -111,14 +114,36 @@ void PuzzleSolver::parse_rule(string& rule) {
 		smatch match;
 		if (regex_search(parms, match, re) == true) {
 			assert(match.size() == 2);
-			string char1 = match.str(1);
-			//cout << "Single " << char1 << endl;
-			do_single_rule(char1);
+			ret_char1 = match.str(1);
+			return true;
 		}
 		else {
 			cout << "No match with: " << rule << endl;
-			assert(false);
+			return false;
 		}
+	}
+	return false;
+}
+
+void PuzzleSolver::execute_rule(string& rule) {
+
+	string command;
+	string char1, char2;
+	int num;
+	bool success_parse = parse_rule(rule, command, char1, char2, num);
+	assert(success_parse);
+
+	if (command == "pair") {
+		do_pairs_rule(char1, char2);
+	}
+	else if (command == "neighbor") {
+		do_neighbors_rule(char1, char2, num);
+	}
+	else if (command == "address") {
+		do_address_rule(num, char1);
+	}
+	else if (command == "single") {
+		do_single_rule(char1);
 	}
 	else {
 		assert(false);

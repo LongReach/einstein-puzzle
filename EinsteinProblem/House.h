@@ -83,6 +83,7 @@ public:
     // If no list given, use the static possible_streets list. If quiet = true, print less info.
     static void print_street_list(StreetList* the_list = NULL, bool quiet = false);
     static bool have_used_enough_values();
+    static void get_unused_values(vector<string> &ret_list);
     // Given a list of new streets, each containing a different proposal of for what to add to the various houses,
     // attempt to combine the proposals with existing list of possible streets, generating a new list of possible
     // streets. This is the heart of the whole program.
