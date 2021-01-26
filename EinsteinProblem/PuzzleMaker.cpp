@@ -14,9 +14,10 @@ void PuzzleMaker::make_model_street() {
 	for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
 		for (int i = 0; i < TOTAL_HOUSES; i++) {
 			string val = House::get_characteristic_string(cat, i);
-			// Now, select a random house to put it in
+			// We have a characteristic. Now, select a random house to put it in.
 			int rand_addr = rand() % TOTAL_CATEGORIES;
 			while (true) {
+				// Find a house that doesn't already have characteristic from that category
 				string current_val = model_street.get_characteristic(rand_addr, cat);
 				if (current_val == "*") {
 					model_street.set_characteristic(rand_addr, val);
@@ -35,7 +36,11 @@ void PuzzleMaker::make_puzzle() {
 	unsigned int best_solution_len = 25;
 	vector<string> best_rules;
 	vector<string> rules_list;
-	for (int i = 0; i < 400; i++) {
+	// We do a bunch of iterations. After each one, we note the best sequence of rules found
+	// so far. The next iteration uses the best sequences as a starting point, randomly varying
+	// a few steps. Once we have a best sequence found so far, we never allow a longer sequence
+	// than that.
+	for (int i = 0; i < 150; i++) {
 		rules_list.clear();
 		populate_rules_cache(best_rules, 3);
 		bool success = make_and_run_rules(rules_list, best_solution_len);
@@ -61,6 +66,8 @@ bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter
 	solver.clear_steps();
 	reset_usage_count();
 
+	// We keep adding rules and running them until we either have a valid rules sequence
+	// or have gone too many steps.
 	bool success = false;
 	while (total_rules < limiter) {
 		string new_rule = make_rule();
@@ -95,14 +102,17 @@ string PuzzleMaker::make_rule() {
 		total_rules++;
 		return rule;
 	}
-	//int possible_choices = 3 - ((total_address_rules >= 2) ? 1 : 0);
-	//int which_rule = rand() % possible_choices;
+	// Neighbors rules occur 1/3 of the time
+	// Address rules occur 1/5 of the time
+	// Pair rules are the remainder
 	int dice_roll = rand() % 30;
 	int which_rule = 0;
 	if (dice_roll < 10) which_rule = 1;
 	else if (dice_roll < 16) which_rule = 2;
 
 	if (which_rule == 0) {
+		// Make a pair rule
+		// Note the logic about not using a particular value too much
 		string val1, val2;
 		for (int n = 0; n < 15; n++) {
 			make_pairs_rule(&val1, &val2);
@@ -202,7 +212,7 @@ void PuzzleMaker::populate_rules_cache(vector<string>& good_rules, int num_skip)
 		rules_cache.clear();
 		return;
 	}
-	set<int> idxs_to_remove;
+	set<int> idxs_to_remove; // these indices from the vector won't go into cache
 	for (int i = 0; i < num_skip; i++) {
 		idxs_to_remove.insert(rand() % good_rules.size());
 	}

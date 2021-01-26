@@ -200,7 +200,7 @@ void Street::print_street_list(StreetList* the_list, bool quiet) {
 
 bool Street::have_used_all_values() {
     for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
-        if (values_present[cat].size() < TOTAL_HOUSES) return false;
+        if (values_present[cat].size() < TOTAL_HOUSES-1) return false;
     }
     return true;
 }
