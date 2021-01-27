@@ -15,7 +15,7 @@ PuzzleSolver::PuzzleSolver() {
 
 void PuzzleSolver::reset() {
 	current_step = 0;
-	Street::reset();
+	street_group.reset();
 }
 
 void PuzzleSolver::clear_steps() {
@@ -54,11 +54,11 @@ bool PuzzleSolver::run_next_step() {
 	}
 	execute_rule(rule);
 	if (verbose) {
-		cout << "Existing combos: " << Street::get_possible_streets_count()
-			<< ", completable streets: " << Street::completable_streets_exist()
+		cout << "Existing combos: " << street_group.get_possible_streets_count()
+			<< ", completable streets: " << street_group.completable_streets_exist()
 			<< endl;
-		if (Street::get_possible_streets_count() == 1 && Street::completable_streets_exist()) {
-			Street::print_street_list();
+		if (street_group.get_possible_streets_count() == 1 && street_group.completable_streets_exist()) {
+			street_group.print_street_list();
 		}
 	}
 	current_step++;
@@ -164,17 +164,17 @@ void PuzzleSolver::execute_rule(const string& rule) {
 }
 
 void PuzzleSolver::do_pairs_rule(const string& char1, const string& char2) {
-	Street::add_new_characteristics(char1, char2);
+	street_group.add_new_characteristics(char1, char2);
 }
 
 void PuzzleSolver::do_neighbors_rule(const string& char1, const string& char2, int dir) {
-	Street::add_neighbor_pair(char1, char2, dir);
+	street_group.add_neighbor_pair(char1, char2, dir);
 }
 
 void PuzzleSolver::do_address_rule(int address, const string& the_char) {
-	Street::add_address(address, the_char);
+	street_group.add_address(address, the_char);
 }
 
 void PuzzleSolver::do_single_rule(const string& the_char) {
-	Street::add_new_characteristics(the_char, the_char);
+	street_group.add_new_characteristics(the_char, the_char);
 }

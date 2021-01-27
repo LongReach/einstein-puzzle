@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "House.h"
+#include "Street.h"
 
 /*
 * This class solves the Einstein Puzzle by processing rules one at a time until the rules are exhausted.
@@ -38,6 +39,8 @@ public:
 
 	// Returns false if parse failed. Returns other values via passed in references.
 	static bool parse_rule(const string &rule, string &ret_command, string& ret_char1, string& ret_char2, int& ret_num);
+
+	StreetGroup street_group;
 
 private:
 	// Parse and execute a rule.

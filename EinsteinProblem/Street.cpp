@@ -3,11 +3,6 @@
 #include "Street.h"
 #include "House.h"
 
-StreetList Street::possible_streets;
-set<int> Street::values_present[TOTAL_CATEGORIES];
-int Street::last_autofill_value;
-int Street::last_autofill_cat;
-
 // Helper function: takes string and pads out to twenty characters.
 string special_format_string(const char* c_str) {
     int required_len = 20;
@@ -37,7 +32,7 @@ const string& Street::get_characteristic(int addr, int cat_idx) {
     return houses[addr].get_characteristic(cat_idx);
 }
 
-Street* Street::combine(Street* other_street) {
+Street* Street::combine(Street* other_street, set<int> values_present []) {
     Street* new_street = new Street();
     int success_count = 0;
     for (int i = 0; i < TOTAL_HOUSES; i++) {
@@ -76,7 +71,11 @@ void Street::print_info() {
     }
 }
 
-void Street::reset() {
+StreetGroup::StreetGroup() {
+
+}
+
+void StreetGroup::reset() {
     erase_street_list(possible_streets);
     for (int i = 0; i < TOTAL_CATEGORIES; i++) {
         values_present[i].clear();
@@ -85,18 +84,18 @@ void Street::reset() {
     last_autofill_value = -1;
 }
 
-int Street::get_possible_streets_count() {
+int StreetGroup::get_possible_streets_count() {
     return possible_streets.size();
 }
 
-void Street::erase_street_list(StreetList& the_list) {
+void StreetGroup::erase_street_list(StreetList& the_list) {
     for (StreetList::iterator it = the_list.begin(); it != the_list.end(); it++) {
         delete (*it);
     }
     the_list.clear();
 }
 
-void Street::print_street_list(StreetList* the_list, bool quiet) {
+void StreetGroup::print_street_list(StreetList* the_list, bool quiet) {
     if (the_list == NULL) {
         the_list = &possible_streets;
     }
@@ -110,19 +109,19 @@ void Street::print_street_list(StreetList* the_list, bool quiet) {
     cout << "Finished street list of size: " << the_list->size() << endl << endl;
 }
 
-bool Street::completable_streets_exist() {
+bool StreetGroup::completable_streets_exist() {
     for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
         if (values_present[cat].size() < TOTAL_HOUSES - 1) return false;
     }
     return true;
 }
 
-string Street::get_last_autofill_value() {
+string StreetGroup::get_last_autofill_value() {
     if (last_autofill_cat == -1 || last_autofill_value == -1) { return "*"; }
     return House::get_characteristic_string(last_autofill_cat, last_autofill_value);
 }
 
-void Street::make_combos(StreetList& new_streets, const string& char1, const string& char2) {
+void StreetGroup::make_combos(StreetList& new_streets, const string& char1, const string& char2) {
     int cat_idxs[2];
     int val_idxs[2];
     for (int i = 0; i < 2; i++) {
@@ -142,7 +141,7 @@ void Street::make_combos(StreetList& new_streets, const string& char1, const str
     StreetList new_combos;
     for (StreetList::iterator outer = possible_streets.begin(); outer != possible_streets.end(); outer++) {
         for (StreetList::iterator inner = new_streets.begin(); inner != new_streets.end(); inner++) {
-            Street* new_street = (*outer)->combine(*inner);
+            Street* new_street = (*outer)->combine(*inner, values_present);
             if (new_street) {
                 new_combos.push_back(new_street);
             }
@@ -172,7 +171,7 @@ void Street::make_combos(StreetList& new_streets, const string& char1, const str
     }
 }
 
-void Street::add_new_characteristics(const string& char1, const string& char2) {
+void StreetGroup::add_new_characteristics(const string& char1, const string& char2) {
     // Generate five proposals
     StreetList new_streets;
     for (int i = 0; i < TOTAL_HOUSES; i++) {
@@ -185,7 +184,7 @@ void Street::add_new_characteristics(const string& char1, const string& char2) {
     //print_street_list(&possible_streets, true);
 }
 
-void Street::add_neighbor_pair(const string& char1, const string& char2, int dir) {
+void StreetGroup::add_neighbor_pair(const string& char1, const string& char2, int dir) {
     assert(dir == 0 || dir == 1);
     // Generate four proposals (since neighbors are next to each other, it's four, not five).
     StreetList new_streets;
@@ -209,7 +208,7 @@ void Street::add_neighbor_pair(const string& char1, const string& char2, int dir
     //print_street_list(&possible_streets, true);
 }
 
-void Street::add_address(int address, const string& the_char) {
+void StreetGroup::add_address(int address, const string& the_char) {
     address--;
     assert(address >= 0 && address < TOTAL_CATEGORIES);
     StreetList new_streets;

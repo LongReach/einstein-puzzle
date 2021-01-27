@@ -98,7 +98,7 @@ void solve_basic_puzzle() {
     while (solver.run_next_step()) {
 
     }
-    Street::print_street_list();
+    solver.street_group.print_street_list();
 }
 
 void make_puzzle() {

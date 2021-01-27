@@ -57,9 +57,9 @@ void PuzzleMaker::make_puzzle() {
 	solver.clear_steps();
 	solver.add_steps(best_rules);
 	while (solver.run_next_step());
-	Street::print_street_list();
+	solver.street_group.print_street_list();
 
-	string target = Street::get_last_autofill_value();
+	string target = solver.street_group.get_last_autofill_value();
 	string last_rule = "single '" + target + "'";
 	best_rules.push_back(last_rule);
 
@@ -87,7 +87,7 @@ bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter
 		solver.run_next_step();
 		//cout << "Streets count is: " << Street::get_possible_streets_count() << endl;
 
-		if (Street::completable_streets_exist() && Street::get_possible_streets_count() == 1) {
+		if (solver.street_group.completable_streets_exist() && solver.street_group.get_possible_streets_count() == 1) {
 			success = true;
 			break;
 		}
