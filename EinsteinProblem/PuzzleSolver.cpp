@@ -63,7 +63,7 @@ bool PuzzleSolver::run_next_step() {
 	return true;
 }
 
-bool PuzzleSolver::parse_rule(string &rule, string& ret_command, string& ret_char1, string& ret_char2, int& ret_num) {
+bool PuzzleSolver::parse_rule(const string &rule, string& ret_command, string& ret_char1, string& ret_char2, int& ret_num) {
 	// Some info about regex:
 	// https://www.softwaretestinghelp.com/regex-in-cpp/
 	// https://www.geeksforgeeks.org/smatch-regex-regular-expressions-in-c/
@@ -136,7 +136,7 @@ bool PuzzleSolver::parse_rule(string &rule, string& ret_command, string& ret_cha
 	return false;
 }
 
-void PuzzleSolver::execute_rule(string& rule) {
+void PuzzleSolver::execute_rule(const string& rule) {
 
 	string command;
 	string char1, char2;
@@ -161,18 +161,18 @@ void PuzzleSolver::execute_rule(string& rule) {
 	}
 }
 
-void PuzzleSolver::do_pairs_rule(string& char1, string& char2) {
+void PuzzleSolver::do_pairs_rule(const string& char1, const string& char2) {
 	Street::add_new_characteristics(char1, char2);
 }
 
-void PuzzleSolver::do_neighbors_rule(string& char1, string& char2, int dir) {
+void PuzzleSolver::do_neighbors_rule(const string& char1, const string& char2, int dir) {
 	Street::add_neighbor_pair(char1, char2, dir);
 }
 
-void PuzzleSolver::do_address_rule(int address, string& the_char) {
+void PuzzleSolver::do_address_rule(int address, const string& the_char) {
 	Street::add_address(address, the_char);
 }
 
-void PuzzleSolver::do_single_rule(string& the_char) {
+void PuzzleSolver::do_single_rule(const string& the_char) {
 	Street::add_new_characteristics(the_char, the_char);
 }

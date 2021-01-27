@@ -37,16 +37,16 @@ public:
 	bool run_next_step();
 
 	// Returns false if parse failed. Returns other values via passed in references.
-	static bool parse_rule(string &rule, string &ret_command, string& ret_char1, string& ret_char2, int& ret_num);
+	static bool parse_rule(const string &rule, string &ret_command, string& ret_char1, string& ret_char2, int& ret_num);
 
 private:
 	// Parse and execute a rule.
-	void execute_rule(string& rule);
+	void execute_rule(const string& rule);
 	// Functions for executing rule of particular type.
-	void do_pairs_rule(string& char1, string& char2);
-	void do_neighbors_rule(string& char1, string& char2, int dir);
-	void do_address_rule(int address, string& the_char);
-	void do_single_rule(string& the_char);
+	void do_pairs_rule(const string& char1, const string& char2);
+	void do_neighbors_rule(const string& char1, const string& char2, int dir);
+	void do_address_rule(int address, const string& the_char);
+	void do_single_rule(const string& the_char);
 
 	vector<string> rules;
 	int current_step;

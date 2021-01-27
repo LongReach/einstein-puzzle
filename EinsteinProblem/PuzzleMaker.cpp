@@ -187,11 +187,11 @@ void PuzzleMaker::reset_usage_count() {
 	}
 }
 
-bool PuzzleMaker::can_use_value(string& val) {
+bool PuzzleMaker::can_use_value(const string& val) {
 	return usage_count[val] < 2;
 }
 
-void PuzzleMaker::increase_usage(string& val) {
+void PuzzleMaker::increase_usage(const string& val) {
 	usage_count[val] = usage_count[val] + 1;
 }
 
@@ -267,8 +267,9 @@ void PuzzleMaker::print_rules(vector<string>& rules, bool english_format) {
 }
 
 // Helper function
-string make_subject_phrase(int cat, string &val, string &command) {
-	string subject = "";
+const string &make_subject_phrase(int cat, const string &val, const string &command) {
+	static string subject;
+	subject = "";
 	if (command == "pair") {
 		string nouns[5] = { "house's owner", "person", "drinker", "smoker", "owner" };
 		subject = "The " + val + " " + nouns[cat];
@@ -281,8 +282,9 @@ string make_subject_phrase(int cat, string &val, string &command) {
 }
 
 // Helper function
-string make_verb_phrase(int cat, string& command, int num) {
-	string verb = "";
+const string &make_verb_phrase(int cat, const string& command, int num) {
+	static string verb;
+	verb = "";
 	if (command == "pair") {
 		string options[5] = { "lives in", "is", "drinks", "smokes", "owns" };
 		verb = options[cat];
@@ -298,8 +300,9 @@ string make_verb_phrase(int cat, string& command, int num) {
 }
 
 // Helper function
-string make_object_phrase(int cat, string &val, string& command, int num) {
-	string object = "";
+const string &make_object_phrase(int cat, const string &val, const string& command, int num) {
+	static string object;
+	object = "";
 	if (command == "pair") {
 		string nouns[5] = { " house", "", "", "", "" };
 		string article = "";
@@ -319,8 +322,8 @@ string make_object_phrase(int cat, string &val, string& command, int num) {
 }
 
 // Helper function
-string make_who_lives_phrase(int cat, string& val) {
-	string phrase;
+const string &make_who_lives_phrase(int cat, const string& val) {
+	static string phrase;
 	if (cat == 1) {
 		phrase = "Which house does the " + val + " person live in?";
 	}
@@ -331,7 +334,7 @@ string make_who_lives_phrase(int cat, string& val) {
 	return phrase;
 }
 
-string PuzzleMaker::get_rule_in_english(string& rule) {
+const string &PuzzleMaker::get_rule_in_english(const string& rule) {
 	// A rule can be English-ified to:
 	// SUBJECT VERB OBJECT
 	// The red house's owner / drinks / coffee
@@ -339,6 +342,7 @@ string PuzzleMaker::get_rule_in_english(string& rule) {
 	// The Pall Mall smoker / lives to the left of to / the red house
 	// The Norwegian person / lives in / the second house
 
+	static string result;
 	string command;
 	string char1, char2;
 	int num;
@@ -350,7 +354,7 @@ string PuzzleMaker::get_rule_in_english(string& rule) {
 	string subject = make_subject_phrase(cat1, char1, command);
 	string verb = make_verb_phrase(cat2, command, num);
 	string object = make_object_phrase(cat2, char2, command, num);
-	string result = subject + " " + verb + " " + object + ".";
+	result = subject + " " + verb + " " + object + ".";
 	if (command == "single") {
 		result = make_who_lives_phrase(cat1, char1);
 	}

@@ -27,8 +27,8 @@ private:
 	// We don't want to use any characteristic more than twice. The usage count dictionary tracks that.
 	void reset_usage_count();
 	// Returns true if a characteristic has been used no more than twice in rule set.
-	bool can_use_value(string& val);
-	void increase_usage(string& val);
+	bool can_use_value(const string& val);
+	void increase_usage(const string& val);
 	// Makes a rule sequence at semi-random. If the rule sequence is valid (one complete answer) and contains
 	// no more than the number of steps specified by 'limiter', returns true. 'ret_rules_list' receives
 	// the rule sequence generated.
@@ -48,7 +48,7 @@ private:
 	// or in English.
 	void print_rules(vector<string>& good_rules, bool english_format = false);
 	// Converts a rule to a readable English sentence.
-	string get_rule_in_english(string& rule);
+	const string &get_rule_in_english(const string& rule);
 
 	Street model_street;
 	// Count of how often a particular characteristic has been used in generating latest sequence of rules.
