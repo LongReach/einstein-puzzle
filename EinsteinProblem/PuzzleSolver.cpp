@@ -47,7 +47,18 @@ bool PuzzleSolver::run_next_step() {
 		return false;
 	}
 	string rule = rules[current_step];
+	if (verbose) {
+		cout << "Executing rule: " << rule << endl;
+	}
 	execute_rule(rule);
+	if (verbose) {
+		cout << "Existing combos: " << Street::get_possible_streets_count()
+			<< ", completable streets: " << Street::completable_streets_exist()
+			<< endl;
+		if (Street::get_possible_streets_count() == 1 && Street::completable_streets_exist()) {
+			Street::print_street_list();
+		}
+	}
 	current_step++;
 	return true;
 }

@@ -202,7 +202,7 @@ void Street::print_street_list(StreetList* the_list, bool quiet) {
     cout << "Finished street list of size: " << the_list->size() << endl << endl;
 }
 
-bool Street::have_used_enough_values() {
+bool Street::completable_streets_exist() {
     for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
         if (values_present[cat].size() < TOTAL_HOUSES-1) return false;
     }
@@ -248,7 +248,7 @@ void Street::make_combos(StreetList &new_streets, string& char1, string& char2) 
         values_present[cat_idxs[i]].insert(val_idxs[i]);
         if (last_autofill_cat == -1 && last_autofill_value == -1) {
             // We haven't come up with these yet, but maybe we can?
-            if (have_used_enough_values()) {
+            if (completable_streets_exist()) {
                 // We are at the point where each category has one or less characteristics left to add.
                 if (values_present[cat_idxs[i]].size() >= TOTAL_HOUSES - 1) {
                     last_autofill_cat = cat_idxs[i]; // the category we just added a characteristic for

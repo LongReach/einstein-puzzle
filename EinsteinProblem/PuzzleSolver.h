@@ -21,6 +21,8 @@ class PuzzleSolver {
 public:
 	PuzzleSolver();
 
+	void set_verbose(bool v) { verbose = v; }
+
 	// Resets the puzzle to step 0. Any rules in memory remain there.
 	void reset();
 	// Resets the puzzle and clears rules from memory.
@@ -49,4 +51,5 @@ private:
 	vector<string> rules;
 	int current_step;
 	int total_steps;
+	bool verbose;
 };

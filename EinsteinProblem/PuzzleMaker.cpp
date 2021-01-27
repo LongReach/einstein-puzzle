@@ -86,7 +86,7 @@ bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter
 		solver.run_next_step();
 		//cout << "Streets count is: " << Street::get_possible_streets_count() << endl;
 
-		if (Street::have_used_enough_values() && Street::get_possible_streets_count() == 1) {
+		if (Street::completable_streets_exist() && Street::get_possible_streets_count() == 1) {
 			success = true;
 			break;
 		}
