@@ -50,11 +50,11 @@ private:
 	// Converts a rule to a readable English sentence.
 	const string &get_rule_in_english(const string& rule);
 
-	Street model_street;
+	Street model_street_;
 	// Count of how often a particular characteristic has been used in generating latest sequence of rules.
-	map<string, int> usage_count;
-	int total_rules;
-	int total_address_rules;
+	map<string, int> usage_count_;
+	int total_rules_;
+	int total_address_rules_;
 
-	deque<string> rules_cache;
+	deque<string> rules_cache_;
 };

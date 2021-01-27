@@ -25,7 +25,7 @@ public:
     void print_info();
 
 private:
-    House houses[TOTAL_HOUSES];
+    House houses_[TOTAL_HOUSES];
 };
 
 class StreetGroup {
@@ -64,8 +64,8 @@ public:
 
 private:
 
-    StreetList possible_streets; // all the possible streets that are known at this stage of the game
-    set<int> values_present[TOTAL_CATEGORIES]; // characteristics that have been applied by this point in game
-    int last_autofill_value;
-    int last_autofill_cat;
+    StreetList possible_streets_; // all the possible streets that are known at this stage of the game
+    set<int> values_present_[TOTAL_CATEGORIES]; // characteristics that have been applied by this point in game
+    int last_autofill_value_;
+    int last_autofill_cat_;
 };

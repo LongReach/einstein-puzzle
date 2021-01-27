@@ -43,12 +43,11 @@ public:
     static const string &get_characteristic_string(int cat_idx, int val_idx);
     
 private:
-    int values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or -1, if none
+    int values_[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or -1, if none
 
-private:
-    static CatMap characteristic_to_category_map; // maps a characteristic to a category number
-    static CharMap characteristic_to_idx_map; // maps a characteristic to a category number
-    static string known_characteristics[TOTAL_CATEGORIES][TOTAL_HOUSES]; // lookup for string values of characteristics
+    static CatMap characteristic_to_category_map_; // maps a characteristic to a category number
+    static CharMap characteristic_to_idx_map_; // maps a characteristic to a category number
+    static string known_characteristics_[TOTAL_CATEGORIES][TOTAL_HOUSES]; // lookup for string values of characteristics
 
 };
 

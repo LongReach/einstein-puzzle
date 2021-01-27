@@ -8,28 +8,28 @@
 using namespace std;
 
 PuzzleSolver::PuzzleSolver() {
-	current_step = 0;
-	total_steps = 0;
-	verbose = false;
+	current_step_ = 0;
+	total_steps_ = 0;
+	verbose_ = false;
 }
 
 void PuzzleSolver::reset() {
-	current_step = 0;
-	street_group.reset();
+	current_step_ = 0;
+	street_group_.reset();
 }
 
 void PuzzleSolver::clear_steps() {
 	reset();
-	rules.clear();
+	rules_.clear();
 }
 
 void PuzzleSolver::add_steps(string steps[]) {
 	for (int i = 0;; i++) {
 		if (steps[i].find("done") != string::npos) {
-			total_steps = i;
+			total_steps_ = i;
 			break;
 		}
-		rules.push_back(steps[i]);
+		rules_.push_back(steps[i]);
 	}
 }
 
@@ -40,28 +40,28 @@ void PuzzleSolver::add_steps(vector<string>& steps) {
 }
 
 void PuzzleSolver::add_step(string &rule) {
-	rules.push_back(rule);
-	total_steps++;
+	rules_.push_back(rule);
+	total_steps_++;
 }
 
 bool PuzzleSolver::run_next_step() {
-	if (current_step >= total_steps) {
+	if (current_step_ >= total_steps_) {
 		return false;
 	}
-	string rule = rules[current_step];
-	if (verbose) {
+	string rule = rules_[current_step_];
+	if (verbose_) {
 		cout << "Executing rule: " << rule << endl;
 	}
 	execute_rule(rule);
-	if (verbose) {
-		cout << "Existing combos: " << street_group.get_possible_streets_count()
-			<< ", completable streets: " << street_group.completable_streets_exist()
+	if (verbose_) {
+		cout << "Existing combos: " << street_group_.get_possible_streets_count()
+			<< ", completable streets: " << street_group_.completable_streets_exist()
 			<< endl;
-		if (street_group.get_possible_streets_count() == 1 && street_group.completable_streets_exist()) {
-			street_group.print_street_list();
+		if (street_group_.get_possible_streets_count() == 1 && street_group_.completable_streets_exist()) {
+			street_group_.print_street_list();
 		}
 	}
-	current_step++;
+	current_step_++;
 	return true;
 }
 
@@ -164,17 +164,17 @@ void PuzzleSolver::execute_rule(const string& rule) {
 }
 
 void PuzzleSolver::do_pairs_rule(const string& char1, const string& char2) {
-	street_group.add_new_characteristics(char1, char2);
+	street_group_.add_new_characteristics(char1, char2);
 }
 
 void PuzzleSolver::do_neighbors_rule(const string& char1, const string& char2, int dir) {
-	street_group.add_neighbor_pair(char1, char2, dir);
+	street_group_.add_neighbor_pair(char1, char2, dir);
 }
 
 void PuzzleSolver::do_address_rule(int address, const string& the_char) {
-	street_group.add_address(address, the_char);
+	street_group_.add_address(address, the_char);
 }
 
 void PuzzleSolver::do_single_rule(const string& the_char) {
-	street_group.add_new_characteristics(the_char, the_char);
+	street_group_.add_new_characteristics(the_char, the_char);
 }
