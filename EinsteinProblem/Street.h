@@ -3,12 +3,7 @@
 
 /*
 * A Street represents five houses in order from left to right. No characteristic is present more than once on a
-* street. The class maintains a static list of all the possible valid streets it knows so far. As new relationship
-* information is added, such as neighbor relationships or characteristics colocated at a single house, combinations
-* that don't work (such as two different nationalities in one house) are discarded.
-*
-* The class keeps track of characteristics that have already been assigned for quick lookup, so they won't be used
-* again.
+* street. Some characteristics might not be assigned yet.
 */
 class Street;
 typedef vector<Street*> StreetList;
@@ -28,6 +23,13 @@ private:
     House houses_[TOTAL_HOUSES];
 };
 
+/*
+* A StreetGroup is a collection of possible streets, ones that haven't yet been discarded as possible solutions to
+* the puzzle. As new characteristics are tried in different houses, some possible streets will be discarded. Obviously,
+* there are combinations that don't work, such as two different people in the same house.
+* 
+* The class keeps track of characteristics that have already been assigned, so they won't be used again.
+*/
 class StreetGroup {
 public:
     StreetGroup();
