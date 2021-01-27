@@ -83,7 +83,10 @@ public:
     // If no list given, use the static possible_streets list. If quiet = true, print less info.
     static void print_street_list(StreetList* the_list = NULL, bool quiet = false);
     static bool have_used_enough_values();
-    static void get_unused_values(vector<string> &ret_list);
+    // If 4/5 characteristics in a category have been assigned, the 5th one can be autofilled. The last autofilled
+    // value is the one that comes from the last category to be autofilled. It is the characteristic most ideal
+    // to have the puzzle solver try to find, because it remains ambiguous the longest.
+    static string get_last_autofill_value();
     // Given a list of new streets, each containing a different proposal of for what to add to the various houses,
     // attempt to combine the proposals with existing list of possible streets, generating a new list of possible
     // streets. This is the heart of the whole program.
@@ -107,4 +110,6 @@ private:
 
     static StreetList possible_streets; // all the possible streets that are known at this stage of the game
     static set<int> values_present[TOTAL_CATEGORIES]; // characteristics that have been applied by this point in game
+    static int last_autofill_value;
+    static int last_autofill_cat;
 };

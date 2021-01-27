@@ -34,7 +34,7 @@ public:
 	// Runs the next step that hasn't been run yet. Returns false if no more steps left to run.
 	bool run_next_step();
 
-	// Returns false if parse failed
+	// Returns false if parse failed. Returns other values via passed in references.
 	static bool parse_rule(string &rule, string &ret_command, string& ret_char1, string& ret_char2, int& ret_num);
 
 private:

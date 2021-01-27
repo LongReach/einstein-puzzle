@@ -97,6 +97,8 @@ string& House::get_characteristic_string(int cat_idx, int val_idx) {
 
 StreetList Street::possible_streets;
 set<int> Street::values_present[TOTAL_CATEGORIES];
+int Street::last_autofill_value;
+int Street::last_autofill_cat;
 
 // Helper function: takes string and pads out to twenty characters.
 string special_format_string(const char* c_str) {
@@ -171,6 +173,8 @@ void Street::reset() {
     for (int i = 0; i < TOTAL_CATEGORIES; i++) {
         values_present[i].clear();
     }
+    last_autofill_cat = -1;
+    last_autofill_value = -1;
 }
 
 int Street::get_possible_streets_count() {
@@ -205,14 +209,9 @@ bool Street::have_used_enough_values() {
     return true;
 }
 
-void Street::get_unused_values(vector<string>& ret_list) {
-    for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
-        for (int val_idx = 0; val_idx < TOTAL_HOUSES; val_idx++) {
-            if (values_present[cat].find(val_idx) == values_present[cat].end()) {
-                ret_list.push_back(House::get_characteristic_string(cat, val_idx));
-            }
-        }
-    }
+string Street::get_last_autofill_value() {
+    if (last_autofill_cat == -1 || last_autofill_value == -1) { return "*"; }
+    return House::get_characteristic_string(last_autofill_cat, last_autofill_value);
 }
 
 void Street::make_combos(StreetList &new_streets, string& char1, string& char2) {
@@ -247,6 +246,21 @@ void Street::make_combos(StreetList &new_streets, string& char1, string& char2) 
     erase_street_list(new_streets);
     for (int i = 0; i < 2; i++) {
         values_present[cat_idxs[i]].insert(val_idxs[i]);
+        if (last_autofill_cat == -1 && last_autofill_value == -1) {
+            // We haven't come up with these yet, but maybe we can?
+            if (have_used_enough_values()) {
+                // We are at the point where each category has one or less characteristics left to add.
+                if (values_present[cat_idxs[i]].size() >= TOTAL_HOUSES - 1) {
+                    last_autofill_cat = cat_idxs[i]; // the category we just added a characteristic for
+                    for (int val_idx = 0; val_idx < TOTAL_HOUSES; val_idx++) {
+                        if (values_present[cat_idxs[i]].find(val_idx) == values_present[cat_idxs[i]].end()) {
+                            last_autofill_value = val_idx;
+                        }
+                    }
+                    assert(last_autofill_value != -1);
+                }
+            }
+        }
     }
 }
 

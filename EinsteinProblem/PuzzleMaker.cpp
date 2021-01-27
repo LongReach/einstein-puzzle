@@ -58,17 +58,13 @@ void PuzzleMaker::make_puzzle() {
 	while (solver.run_next_step());
 	Street::print_street_list();
 
-	vector<string> unused_vals;
-	Street::get_unused_values(unused_vals);
-	// Choose a random value to be the thing to be found
-	string target = (unused_vals.size() == 0) ? "*" : unused_vals[rand() % unused_vals.size()];
+	string target = Street::get_last_autofill_value();
 	string last_rule = "single '" + target + "'";
 	best_rules.push_back(last_rule);
 
-	cout << "Best rules, size=" << best_rules.size() << endl;
-	for (vector<string>::iterator it = best_rules.begin(); it != best_rules.end(); it++) {
-		cout << *it << endl;
-	}
+	print_rules(best_rules);
+	cout << endl;
+	print_rules(best_rules, true);
 }
 
 bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter) {
@@ -252,10 +248,111 @@ void PuzzleMaker::populate_rules_cache(vector<string>& good_rules, int num_skip)
 	}
 }
 
-void PuzzleMaker::print_rules(vector<string>& good_rules, bool english_format) {
+void PuzzleMaker::print_rules(vector<string>& rules, bool english_format) {
+	if (english_format == false) {
+		cout << "Rules:" << rules.size() << endl;
+		bool add_comma = false;
+		for (vector<string>::iterator it = rules.begin(); it != rules.end(); it++) {
+			cout << (add_comma ? ",\n" : "") << "\"" << *it << "\"";
+			add_comma = true;
+		}
+		cout << endl;
+	}
+	else {
+		// English format
+		for (vector<string>::iterator it = rules.begin(); it != rules.end(); it++) {
+			cout << get_rule_in_english(*it) << endl;
+		}
+	}
+}
 
+// Helper function
+string make_subject_phrase(int cat, string &val, string &command) {
+	string subject = "";
+	if (command == "pair") {
+		string nouns[5] = { "house's owner", "person", "drinker", "smoker", "owner" };
+		subject = "The " + val + " " + nouns[cat];
+	}
+	else if (command == "neighbor" || command == "address") {
+		string nouns[5] = { "house", "person", "drinker", "smoker", "owner" };
+		subject = "The " + val + " " + nouns[cat];
+	}
+	return subject;
+}
+
+// Helper function
+string make_verb_phrase(int cat, string& command, int num) {
+	string verb = "";
+	if (command == "pair") {
+		string options[5] = { "lives in", "is", "drinks", "smokes", "owns" };
+		verb = options[cat];
+	}
+	else if (command == "neighbor") {
+		string options[2] = { "is neighbors with", "is to the left of" };
+		verb = options[num];
+	}
+	else if (command == "address") {
+		verb = "is at";
+	}
+	return verb;
+}
+
+// Helper function
+string make_object_phrase(int cat, string &val, string& command, int num) {
+	string object = "";
+	if (command == "pair") {
+		string nouns[5] = { " house", "", "", "", "" };
+		string article = "";
+		if (cat == 0) article = "the ";
+		if (cat == 4) article = "a ";
+		object =  article + val + nouns[cat];
+	}
+	else if (command == "neighbor") {
+		string nouns[5] = { "house", "person", "drinker", "smoker", "owner" };
+		object = "the " + val + " " + nouns[cat];
+	}
+	else if (command == "address") {
+		string descrps[6] = { "zeroth", "first", "second", "third", "fourth", "fifth" };
+		object = "the " + descrps[num] + " address";
+	}
+	return object;
+}
+
+// Helper function
+string make_who_lives_phrase(int cat, string& val) {
+	string phrase;
+	if (cat == 1) {
+		phrase = "Which house does the " + val + " person live in?";
+	}
+	else {
+		string command = "pair";
+		phrase = "Who " + make_verb_phrase(cat, command, 0) + " " + make_object_phrase(cat, val, command, 0) + "?";
+	}
+	return phrase;
 }
 
 string PuzzleMaker::get_rule_in_english(string& rule) {
-	return "";
+	// A rule can be English-ified to:
+	// SUBJECT VERB OBJECT
+	// The red house's owner / drinks / coffee
+	// The coffee drinker / has a / cat
+	// The Pall Mall smoker / lives to the left of to / the red house
+	// The Norwegian person / lives in / the second house
+
+	string command;
+	string char1, char2;
+	int num;
+	PuzzleSolver::parse_rule(rule, command, char1, char2, num);
+	int cat1, cat2, idx1, idx2;
+	House::get_cat_and_idx_from_characteristic(char1, &cat1, &idx1);
+	House::get_cat_and_idx_from_characteristic(char2, &cat2, &idx2);
+
+	string subject = make_subject_phrase(cat1, char1, command);
+	string verb = make_verb_phrase(cat2, command, num);
+	string object = make_object_phrase(cat2, char2, command, num);
+	string result = subject + " " + verb + " " + object + ".";
+	if (command == "single") {
+		result = make_who_lives_phrase(cat1, char1);
+	}
+	return result;
 }

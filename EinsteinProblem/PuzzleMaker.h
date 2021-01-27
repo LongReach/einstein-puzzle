@@ -44,7 +44,10 @@ private:
 	// 'num_skip' specifies how many rules in the sequence to randomly omit from being cached.
 	void populate_rules_cache(vector<string>& good_rules, int num_skip);
 
+	// Prints out the rules of the finished puzzle, either using rule specification from PuzzleSolver
+	// or in English.
 	void print_rules(vector<string>& good_rules, bool english_format = false);
+	// Converts a rule to a readable English sentence.
 	string get_rule_in_english(string& rule);
 
 	Street model_street;
