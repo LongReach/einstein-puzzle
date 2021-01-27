@@ -24,10 +24,11 @@ bool House::set_characteristic(int cat_idx, int val_idx) {
     return true;
 }
 
-string House::get_characteristic(int cat_idx) {
+const string &House::get_characteristic(int cat_idx) {
+    static const string star = "*";
     assert(cat_idx >= 0 && cat_idx < TOTAL_CATEGORIES);
     if (values[cat_idx] == -1) {
-        return "*";
+        return star;
     }
     return known_characteristics[cat_idx][values[cat_idx]];
 }
@@ -67,7 +68,7 @@ void House::merge(House* other) {
     }
 }
     
-void House::add_characteristic_and_category(string& characteristic, int cat, int idx) {
+void House::add_characteristic_and_category(const string& characteristic, int cat, int idx) {
     assert(cat >= 0 && cat < TOTAL_CATEGORIES);
     assert(idx >= 0 && idx < TOTAL_HOUSES);
     characteristic_to_category_map[characteristic] = cat;
@@ -75,7 +76,7 @@ void House::add_characteristic_and_category(string& characteristic, int cat, int
     known_characteristics[cat][idx] = characteristic;
 }
 
-bool House::get_cat_and_idx_from_characteristic(string& characteristic, int* ret_cat, int* ret_idx) {
+bool House::get_cat_and_idx_from_characteristic(const string& characteristic, int* ret_cat, int* ret_idx) {
     CatMap::iterator it1 = characteristic_to_category_map.find(characteristic);
     if (it1 == characteristic_to_category_map.end()) {
         return false;
@@ -89,7 +90,7 @@ bool House::get_cat_and_idx_from_characteristic(string& characteristic, int* ret
     return true;
 }
 
-string& House::get_characteristic_string(int cat_idx, int val_idx) {
+const string& House::get_characteristic_string(int cat_idx, int val_idx) {
     assert(cat_idx >= 0 && cat_idx < TOTAL_CATEGORIES);
     assert(val_idx >= 0 && val_idx < TOTAL_HOUSES);
     return known_characteristics[cat_idx][val_idx];
@@ -116,7 +117,7 @@ string special_format_string(const char* c_str) {
 Street::Street() {
 }
 
-void Street::set_characteristic(int addr, string& characteristic) {
+void Street::set_characteristic(int addr, const string& characteristic) {
     int cat_idx = -1;
     int val_idx = -1;
     bool success = House::get_cat_and_idx_from_characteristic(characteristic, &cat_idx, &val_idx);
@@ -125,7 +126,7 @@ void Street::set_characteristic(int addr, string& characteristic) {
     }
 }
 
-string Street::get_characteristic(int addr, int cat_idx) {
+const string &Street::get_characteristic(int addr, int cat_idx) {
     return houses[addr].get_characteristic(cat_idx);
 }
 
@@ -214,7 +215,7 @@ string Street::get_last_autofill_value() {
     return House::get_characteristic_string(last_autofill_cat, last_autofill_value);
 }
 
-void Street::make_combos(StreetList &new_streets, string& char1, string& char2) {
+void Street::make_combos(StreetList &new_streets, const string& char1, const string& char2) {
     int cat_idxs[2];
     int val_idxs[2];
     for (int i = 0; i < 2; i++) {
@@ -264,7 +265,7 @@ void Street::make_combos(StreetList &new_streets, string& char1, string& char2) 
     }
 }
 
-void Street::add_new_characteristics(string& char1, string& char2) {
+void Street::add_new_characteristics(const string& char1, const string& char2) {
     // Generate five proposals
     StreetList new_streets;
     for (int i = 0; i < TOTAL_HOUSES; i++) {
@@ -277,7 +278,7 @@ void Street::add_new_characteristics(string& char1, string& char2) {
     //print_street_list(&possible_streets, true);
 }
 
-void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
+void Street::add_neighbor_pair(const string& char1, const string& char2, int dir) {
     assert(dir == 0 || dir == 1);
     // Generate four proposals (since neighbors are next to each other, it's four, not five).
     StreetList new_streets;
@@ -301,7 +302,7 @@ void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
     //print_street_list(&possible_streets, true);
 }
 
-void Street::add_address(int address, string& the_char) {
+void Street::add_address(int address, const string& the_char) {
     address--;
     assert(address >= 0 && address < TOTAL_CATEGORIES);
     StreetList new_streets;

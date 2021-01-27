@@ -28,7 +28,7 @@ public:
     // Assigns a characteristic to this house, given category index (e.g. "color") and value index (e.g. "white")
     bool set_characteristic(int cat_idx, int val_idx);
     // Gets the characterisitic in given category as a string, or returns "*" if none assigned
-    string get_characteristic(int cat_idx);
+    const string &get_characteristic(int cat_idx);
     // Returns true if the other can be merged. already_used_values is an array of sets containing the characteristics
     // already used in each category.
     bool can_merge(House* other, set<int> already_used_values[]);
@@ -36,10 +36,10 @@ public:
     void merge(House* other);
 
     // Adds a characteristic and its category number to tracking, for easy lookup
-    static void add_characteristic_and_category(string& characteristic, int cat, int idx);
+    static void add_characteristic_and_category(const string& characteristic, int cat, int idx);
     // Given a characteristic (e.g. "horse"), returns its category index and index.
-    static bool get_cat_and_idx_from_characteristic(string& characteristic, int* ret_cat, int* ret_idx);
-    static string& get_characteristic_string(int cat_idx, int val_idx);
+    static bool get_cat_and_idx_from_characteristic(const string& characteristic, int* ret_cat, int* ret_idx);
+    static const string &get_characteristic_string(int cat_idx, int val_idx);
     
 private:
     int values[TOTAL_CATEGORIES]; // contains the assigned characteristic in each category or -1, if none
@@ -67,8 +67,8 @@ class Street {
 public:
     Street();
     // Assigns a characteristic to house at the given address.
-    void set_characteristic(int addr, string& characteristic);
-    string get_characteristic(int addr, int cat_idx);
+    void set_characteristic(int addr, const string& characteristic);
+    const string &get_characteristic(int addr, int cat_idx);
     // Combines this street with the other, if possible, returns new Street object. If not possible, returns NULL.
     Street* combine(Street* other_street);
     // Prints out pretty-formatted info about contents of houses on this street
@@ -93,17 +93,17 @@ public:
     //
     // char1 and char2 are characteristics to mark as "already used", *after* the new set of possible streets has
     // been made.
-    static void make_combos(StreetList &new_streets, string& char1, string& char2);
+    static void make_combos(StreetList &new_streets, const string& char1, const string& char2);
     // Generate a set of proposals, given two characteristics located togther, then combine them with existing
     // possible streets. Basically, we try each characteristic pair in each of the five houses.
-    static void add_new_characteristics(string& char1, string& char2);
+    static void add_new_characteristics(const string& char1, const string& char2);
     // Given two characteristics that are neighbors, generate a set of proposals and combine them with existing
     // possible streets. If dir == 1, the second neighbor is to the right of the first. If dir == 0, the left-right
     // order isn't known.
     // For dir == 1, there will be four proposals. For dir == 0, there will be eight.
-    static void add_neighbor_pair(string& char1, string& char2, int dir);
+    static void add_neighbor_pair(const string& char1, const string& char2, int dir);
     // Generates a single proposed house at given address and combines it with existing possible streets.
-    static void add_address(int address, string& the_char);
+    static void add_address(int address, const string& the_char);
 
 private:
     House houses[TOTAL_HOUSES];
