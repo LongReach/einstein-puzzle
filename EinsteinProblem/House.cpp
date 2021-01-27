@@ -97,6 +97,8 @@ string& House::get_characteristic_string(int cat_idx, int val_idx) {
 
 StreetList Street::possible_streets;
 set<int> Street::values_present[TOTAL_CATEGORIES];
+int Street::last_autofill_value;
+int Street::last_autofill_cat;
 
 // Helper function: takes string and pads out to twenty characters.
 string special_format_string(const char* c_str) {
@@ -121,6 +123,10 @@ void Street::set_characteristic(int addr, string& characteristic) {
     if (success) {
         houses[addr].set_characteristic(cat_idx, val_idx);
     }
+}
+
+string Street::get_characteristic(int addr, int cat_idx) {
+    return houses[addr].get_characteristic(cat_idx);
 }
 
 Street* Street::combine(Street* other_street) {
@@ -167,6 +173,8 @@ void Street::reset() {
     for (int i = 0; i < TOTAL_CATEGORIES; i++) {
         values_present[i].clear();
     }
+    last_autofill_cat = -1;
+    last_autofill_value = -1;
 }
 
 int Street::get_possible_streets_count() {
@@ -192,6 +200,18 @@ void Street::print_street_list(StreetList* the_list, bool quiet) {
         }
     }
     cout << "Finished street list of size: " << the_list->size() << endl << endl;
+}
+
+bool Street::have_used_enough_values() {
+    for (int cat = 0; cat < TOTAL_CATEGORIES; cat++) {
+        if (values_present[cat].size() < TOTAL_HOUSES-1) return false;
+    }
+    return true;
+}
+
+string Street::get_last_autofill_value() {
+    if (last_autofill_cat == -1 || last_autofill_value == -1) { return "*"; }
+    return House::get_characteristic_string(last_autofill_cat, last_autofill_value);
 }
 
 void Street::make_combos(StreetList &new_streets, string& char1, string& char2) {
@@ -226,6 +246,21 @@ void Street::make_combos(StreetList &new_streets, string& char1, string& char2) 
     erase_street_list(new_streets);
     for (int i = 0; i < 2; i++) {
         values_present[cat_idxs[i]].insert(val_idxs[i]);
+        if (last_autofill_cat == -1 && last_autofill_value == -1) {
+            // We haven't come up with these yet, but maybe we can?
+            if (have_used_enough_values()) {
+                // We are at the point where each category has one or less characteristics left to add.
+                if (values_present[cat_idxs[i]].size() >= TOTAL_HOUSES - 1) {
+                    last_autofill_cat = cat_idxs[i]; // the category we just added a characteristic for
+                    for (int val_idx = 0; val_idx < TOTAL_HOUSES; val_idx++) {
+                        if (values_present[cat_idxs[i]].find(val_idx) == values_present[cat_idxs[i]].end()) {
+                            last_autofill_value = val_idx;
+                        }
+                    }
+                    assert(last_autofill_value != -1);
+                }
+            }
+        }
     }
 }
 
@@ -239,7 +274,7 @@ void Street::add_new_characteristics(string& char1, string& char2) {
         new_streets.push_back(street);
     }
     make_combos(new_streets, char1, char2);
-    print_street_list(&possible_streets, true);
+    //print_street_list(&possible_streets, true);
 }
 
 void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
@@ -263,7 +298,7 @@ void Street::add_neighbor_pair(string& char1, string& char2, int dir) {
     }
 
     make_combos(new_streets, char1, char2);
-    print_street_list(&possible_streets, true);
+    //print_street_list(&possible_streets, true);
 }
 
 void Street::add_address(int address, string& the_char) {
@@ -274,5 +309,5 @@ void Street::add_address(int address, string& the_char) {
     street->set_characteristic(address, the_char);
     new_streets.push_back(street);
     make_combos(new_streets, the_char, the_char);
-    print_street_list(&possible_streets, true);
+    //print_street_list(&possible_streets, true);
 }
