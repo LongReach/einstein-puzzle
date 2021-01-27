@@ -2,12 +2,13 @@
 #include <time.h>
 #include <iostream>
 #include "House.h"
+#include "Street.h"
 #include "PuzzleMaker.h"
 
 PuzzleMaker::PuzzleMaker() {
 	srand((int) time(NULL));
-	total_rules = 0;
-	total_address_rules = 0;
+	total_rules_ = 0;
+	total_address_rules_ = 0;
 }
 
 void PuzzleMaker::make_model_street() {
@@ -18,9 +19,9 @@ void PuzzleMaker::make_model_street() {
 			int rand_addr = rand() % TOTAL_CATEGORIES;
 			while (true) {
 				// Find a house that doesn't already have characteristic from that category
-				string current_val = model_street.get_characteristic(rand_addr, cat);
+				string current_val = model_street_.get_characteristic(rand_addr, cat);
 				if (current_val == "*") {
-					model_street.set_characteristic(rand_addr, val);
+					model_street_.set_characteristic(rand_addr, val);
 					break;
 				}
 				rand_addr++;
@@ -29,7 +30,7 @@ void PuzzleMaker::make_model_street() {
 		}
 	}
 
-	model_street.print_info();
+	model_street_.print_info();
 }
 
 void PuzzleMaker::make_puzzle() {
@@ -56,9 +57,9 @@ void PuzzleMaker::make_puzzle() {
 	solver.clear_steps();
 	solver.add_steps(best_rules);
 	while (solver.run_next_step());
-	Street::print_street_list();
+	solver.street_group_.print_street_list();
 
-	string target = Street::get_last_autofill_value();
+	string target = solver.street_group_.get_last_autofill_value();
 	string last_rule = "single '" + target + "'";
 	best_rules.push_back(last_rule);
 
@@ -68,8 +69,8 @@ void PuzzleMaker::make_puzzle() {
 }
 
 bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter) {
-	total_rules = 0;
-	total_address_rules = 0;
+	total_rules_ = 0;
+	total_address_rules_ = 0;
 
 	PuzzleSolver solver;
 	solver.clear_steps();
@@ -78,7 +79,7 @@ bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter
 	// We keep adding rules and running them until we either have a valid rules sequence
 	// or have gone too many steps.
 	bool success = false;
-	while (total_rules < limiter) {
+	while (total_rules_ < limiter) {
 		string new_rule = make_rule();
 		solver.add_step(new_rule);
 		ret_rules_list.push_back(new_rule);
@@ -86,13 +87,13 @@ bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter
 		solver.run_next_step();
 		//cout << "Streets count is: " << Street::get_possible_streets_count() << endl;
 
-		if (Street::completable_streets_exist() && Street::get_possible_streets_count() == 1) {
+		if (solver.street_group_.completable_streets_exist() && solver.street_group_.get_possible_streets_count() == 1) {
 			success = true;
 			break;
 		}
 	}
 	//Street::print_street_list();
-	cout << "Done making puzzle! Total rules: " << total_rules << endl << endl;
+	cout << "Done making puzzle! Total rules: " << total_rules_ << endl << endl;
 #if 0
 	model_street.print_info();
 	cout << "Rules:" << endl;
@@ -105,14 +106,14 @@ bool PuzzleMaker::make_and_run_rules(vector<string> &ret_rules_list, int limiter
 
 string PuzzleMaker::make_rule() {
 	string rule;
-	if (rules_cache.size() > 0) {
-		rule = rules_cache.front();
-		rules_cache.pop_front();
-		total_rules++;
+	if (rules_cache_.size() > 0) {
+		rule = rules_cache_.front();
+		rules_cache_.pop_front();
+		total_rules_++;
 
 		int first_space_idx = rule.find(' ');
 		string command = rule.substr(0, first_space_idx);
-		if (command == "address") total_address_rules++;
+		if (command == "address") total_address_rules_++;
 
 		return rule;
 	}
@@ -126,7 +127,7 @@ string PuzzleMaker::make_rule() {
 		which_rule = 0;
 		if (dice_roll < 10) which_rule = 1;
 		else if (dice_roll < 16) which_rule = 2;
-		if (which_rule == 2 && total_address_rules > 3) {
+		if (which_rule == 2 && total_address_rules_ > 3) {
 			// we can only make so many address rules
 			continue;
 		}
@@ -170,29 +171,29 @@ string PuzzleMaker::make_rule() {
 		}
 		increase_usage(val1);
 		rule = rule + "address " + to_string(addr + 1) + " '" + val1 + "'";
-		total_address_rules++;
+		total_address_rules_++;
 	}
 	//cout << "Rule is: " << rule << endl;
-	total_rules++;
+	total_rules_++;
 	return rule;
 }
 
 void PuzzleMaker::reset_usage_count() {
-	usage_count.clear();
+	usage_count_.clear();
 	for (int j = 0; j < TOTAL_CATEGORIES; j++) {
 		for (int i = 0; i < TOTAL_CATEGORIES; i++) {
 			string val = House::get_characteristic_string(j, i);
-			usage_count[val] = 0;
+			usage_count_[val] = 0;
 		}
 	}
 }
 
-bool PuzzleMaker::can_use_value(string& val) {
-	return usage_count[val] < 2;
+bool PuzzleMaker::can_use_value(const string& val) {
+	return usage_count_[val] < 2;
 }
 
-void PuzzleMaker::increase_usage(string& val) {
-	usage_count[val] = usage_count[val] + 1;
+void PuzzleMaker::increase_usage(const string& val) {
+	usage_count_[val] = usage_count_[val] + 1;
 }
 
 void PuzzleMaker::make_pairs_rule(string* ret_char1, string* ret_char2) {
@@ -205,8 +206,8 @@ void PuzzleMaker::make_pairs_rule(string* ret_char1, string* ret_char2) {
 	}
 	// choose a random house
 	int rand_addr = rand() % TOTAL_HOUSES;
-	*ret_char1 = model_street.get_characteristic(rand_addr, cat1);
-	*ret_char2 = model_street.get_characteristic(rand_addr, cat2);
+	*ret_char1 = model_street_.get_characteristic(rand_addr, cat1);
+	*ret_char2 = model_street_.get_characteristic(rand_addr, cat2);
 }
 
 void PuzzleMaker::make_neighbors_rule(string* ret_char1, string* ret_char2, int* ret_dir) {
@@ -220,21 +221,21 @@ void PuzzleMaker::make_neighbors_rule(string* ret_char1, string* ret_char2, int*
 	}
 	int first_addr = (rand() % (TOTAL_HOUSES - 1)) + (actual_dir == -1) ? 1 : 0;
 	int second_addr = first_addr + actual_dir;
-	*ret_char1 = model_street.get_characteristic(first_addr, cat1);
-	*ret_char2 = model_street.get_characteristic(second_addr, cat2);
+	*ret_char1 = model_street_.get_characteristic(first_addr, cat1);
+	*ret_char2 = model_street_.get_characteristic(second_addr, cat2);
 	*ret_dir = shown_dir;
 }
 
 void PuzzleMaker::make_address_rule(int* ret_addr, string* ret_char) {
 	int cat1 = rand() % TOTAL_CATEGORIES;
 	int rand_addr = rand() % TOTAL_HOUSES;
-	*ret_char = model_street.get_characteristic(rand_addr, cat1);
+	*ret_char = model_street_.get_characteristic(rand_addr, cat1);
 	*ret_addr = rand_addr;
 }
 
 void PuzzleMaker::populate_rules_cache(vector<string>& good_rules, int num_skip) {
 	if (good_rules.size() == 0) {
-		rules_cache.clear();
+		rules_cache_.clear();
 		return;
 	}
 	set<int> idxs_to_remove; // these indices from the vector won't go into cache
@@ -243,7 +244,7 @@ void PuzzleMaker::populate_rules_cache(vector<string>& good_rules, int num_skip)
 	}
 	for (unsigned int i = 0; i < good_rules.size(); i++) {
 		if (idxs_to_remove.find(i) == idxs_to_remove.end()) {
-			rules_cache.push_back(good_rules[i]);
+			rules_cache_.push_back(good_rules[i]);
 		}
 	}
 }
@@ -267,8 +268,9 @@ void PuzzleMaker::print_rules(vector<string>& rules, bool english_format) {
 }
 
 // Helper function
-string make_subject_phrase(int cat, string &val, string &command) {
-	string subject = "";
+const string &make_subject_phrase(int cat, const string &val, const string &command) {
+	static string subject;
+	subject = "";
 	if (command == "pair") {
 		string nouns[5] = { "house's owner", "person", "drinker", "smoker", "owner" };
 		subject = "The " + val + " " + nouns[cat];
@@ -281,8 +283,9 @@ string make_subject_phrase(int cat, string &val, string &command) {
 }
 
 // Helper function
-string make_verb_phrase(int cat, string& command, int num) {
-	string verb = "";
+const string &make_verb_phrase(int cat, const string& command, int num) {
+	static string verb;
+	verb = "";
 	if (command == "pair") {
 		string options[5] = { "lives in", "is", "drinks", "smokes", "owns" };
 		verb = options[cat];
@@ -298,8 +301,9 @@ string make_verb_phrase(int cat, string& command, int num) {
 }
 
 // Helper function
-string make_object_phrase(int cat, string &val, string& command, int num) {
-	string object = "";
+const string &make_object_phrase(int cat, const string &val, const string& command, int num) {
+	static string object;
+	object = "";
 	if (command == "pair") {
 		string nouns[5] = { " house", "", "", "", "" };
 		string article = "";
@@ -319,8 +323,8 @@ string make_object_phrase(int cat, string &val, string& command, int num) {
 }
 
 // Helper function
-string make_who_lives_phrase(int cat, string& val) {
-	string phrase;
+const string &make_who_lives_phrase(int cat, const string& val) {
+	static string phrase;
 	if (cat == 1) {
 		phrase = "Which house does the " + val + " person live in?";
 	}
@@ -331,7 +335,7 @@ string make_who_lives_phrase(int cat, string& val) {
 	return phrase;
 }
 
-string PuzzleMaker::get_rule_in_english(string& rule) {
+const string &PuzzleMaker::get_rule_in_english(const string& rule) {
 	// A rule can be English-ified to:
 	// SUBJECT VERB OBJECT
 	// The red house's owner / drinks / coffee
@@ -339,6 +343,7 @@ string PuzzleMaker::get_rule_in_english(string& rule) {
 	// The Pall Mall smoker / lives to the left of to / the red house
 	// The Norwegian person / lives in / the second house
 
+	static string result;
 	string command;
 	string char1, char2;
 	int num;
@@ -350,7 +355,7 @@ string PuzzleMaker::get_rule_in_english(string& rule) {
 	string subject = make_subject_phrase(cat1, char1, command);
 	string verb = make_verb_phrase(cat2, command, num);
 	string object = make_object_phrase(cat2, char2, command, num);
-	string result = subject + " " + verb + " " + object + ".";
+	result = subject + " " + verb + " " + object + ".";
 	if (command == "single") {
 		result = make_who_lives_phrase(cat1, char1);
 	}

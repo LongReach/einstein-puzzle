@@ -8,6 +8,7 @@
 #include <vector>
 #include <set>
 #include "House.h"
+#include "Street.h"
 #include "PuzzleSolver.h"
 #include "PuzzleMaker.h"
 
@@ -97,7 +98,7 @@ void solve_basic_puzzle() {
     while (solver.run_next_step()) {
 
     }
-    Street::print_street_list();
+    solver.street_group_.print_street_list();
 }
 
 void make_puzzle() {

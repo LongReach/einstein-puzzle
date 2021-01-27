@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "House.h"
+#include "Street.h"
 
 /*
 * This class solves the Einstein Puzzle by processing rules one at a time until the rules are exhausted.
@@ -21,7 +22,7 @@ class PuzzleSolver {
 public:
 	PuzzleSolver();
 
-	void set_verbose(bool v) { verbose = v; }
+	void set_verbose(bool v) { verbose_ = v; }
 
 	// Resets the puzzle to step 0. Any rules in memory remain there.
 	void reset();
@@ -37,19 +38,21 @@ public:
 	bool run_next_step();
 
 	// Returns false if parse failed. Returns other values via passed in references.
-	static bool parse_rule(string &rule, string &ret_command, string& ret_char1, string& ret_char2, int& ret_num);
+	static bool parse_rule(const string &rule, string &ret_command, string& ret_char1, string& ret_char2, int& ret_num);
+
+	StreetGroup street_group_;
 
 private:
 	// Parse and execute a rule.
-	void execute_rule(string& rule);
+	void execute_rule(const string& rule);
 	// Functions for executing rule of particular type.
-	void do_pairs_rule(string& char1, string& char2);
-	void do_neighbors_rule(string& char1, string& char2, int dir);
-	void do_address_rule(int address, string& the_char);
-	void do_single_rule(string& the_char);
+	void do_pairs_rule(const string& char1, const string& char2);
+	void do_neighbors_rule(const string& char1, const string& char2, int dir);
+	void do_address_rule(int address, const string& the_char);
+	void do_single_rule(const string& the_char);
 
-	vector<string> rules;
-	int current_step;
-	int total_steps;
-	bool verbose;
+	vector<string> rules_;
+	int current_step_;
+	int total_steps_;
+	bool verbose_;
 };
