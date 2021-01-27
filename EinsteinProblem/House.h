@@ -7,6 +7,7 @@
 using namespace std;
 
 const int TOTAL_HOUSES = 5;
+const int TOTAL_VALUES = 5;
 const int TOTAL_CATEGORIES = 5;
 
 typedef map<string, int> CatMap;

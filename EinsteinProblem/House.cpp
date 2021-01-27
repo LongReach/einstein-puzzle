@@ -9,7 +9,7 @@ using namespace std;
 
 CatMap House::characteristic_to_category_map;
 CharMap House::characteristic_to_idx_map;
-string House::known_characteristics[TOTAL_CATEGORIES][TOTAL_HOUSES];
+string House::known_characteristics[TOTAL_CATEGORIES][TOTAL_VALUES];
 
 House::House() {
     for (int j = 0; j < TOTAL_CATEGORIES; j++) {
@@ -19,7 +19,7 @@ House::House() {
 
 bool House::set_characteristic(int cat_idx, int val_idx) {
     assert(cat_idx >= 0 && cat_idx < TOTAL_CATEGORIES);
-    assert(val_idx >= 0 && val_idx < TOTAL_HOUSES);
+    assert(val_idx >= 0 && val_idx < TOTAL_VALUES);
     values[cat_idx] = val_idx;
     return true;
 }
@@ -70,7 +70,7 @@ void House::merge(House* other) {
     
 void House::add_characteristic_and_category(const string& characteristic, int cat, int idx) {
     assert(cat >= 0 && cat < TOTAL_CATEGORIES);
-    assert(idx >= 0 && idx < TOTAL_HOUSES);
+    assert(idx >= 0 && idx < TOTAL_VALUES);
     characteristic_to_category_map[characteristic] = cat;
     characteristic_to_idx_map[characteristic] = idx;
     known_characteristics[cat][idx] = characteristic;
@@ -92,7 +92,7 @@ bool House::get_cat_and_idx_from_characteristic(const string& characteristic, in
 
 const string& House::get_characteristic_string(int cat_idx, int val_idx) {
     assert(cat_idx >= 0 && cat_idx < TOTAL_CATEGORIES);
-    assert(val_idx >= 0 && val_idx < TOTAL_HOUSES);
+    assert(val_idx >= 0 && val_idx < TOTAL_VALUES);
     return known_characteristics[cat_idx][val_idx];
 }
 

@@ -157,9 +157,9 @@ void StreetGroup::make_combos(StreetList& new_streets, const string& char1, cons
             // We haven't come up with these yet, but maybe we can?
             if (completable_streets_exist()) {
                 // We are at the point where each category has one or less characteristics left to add.
-                if (values_present[cat_idxs[i]].size() >= TOTAL_HOUSES - 1) {
+                if (values_present[cat_idxs[i]].size() >= TOTAL_VALUES - 1) {
                     last_autofill_cat = cat_idxs[i]; // the category we just added a characteristic for
-                    for (int val_idx = 0; val_idx < TOTAL_HOUSES; val_idx++) {
+                    for (int val_idx = 0; val_idx < TOTAL_VALUES; val_idx++) {
                         if (values_present[cat_idxs[i]].find(val_idx) == values_present[cat_idxs[i]].end()) {
                             last_autofill_value = val_idx;
                         }
