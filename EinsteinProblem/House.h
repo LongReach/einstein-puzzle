@@ -82,7 +82,7 @@ public:
     // Given a list of streets, print them all.
     // If no list given, use the static possible_streets list. If quiet = true, print less info.
     static void print_street_list(StreetList* the_list = NULL, bool quiet = false);
-    static bool have_used_enough_values();
+    static bool completable_streets_exist();
     // If 4/5 characteristics in a category have been assigned, the 5th one can be autofilled. The last autofilled
     // value is the one that comes from the last category to be autofilled. It is the characteristic most ideal
     // to have the puzzle solver try to find, because it remains ambiguous the longest.

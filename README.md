@@ -146,10 +146,24 @@ The dog owner is neighbors with the milk drinker.
 Who drinks beer?
 ```
 
+## How to run
+
+I developed this code in Visual Studio 2019. The solution and project files are provided.
+
+Build it per usual process, then run from the command line as follows:
+
+```
+PS D:\CodingProjects\CPP\EinsteinProblem\Release> .\EinsteinProblem.exe help
+Einstein's Puzzle
+-----------------
+(Use 'help' argument for help)
+Arguments: help
+
+Use 'basic' argument (or nothing) to solve basic puzzle. Use 'generate' argument to generate puzzle.
+PS D:\CodingProjects\CPP\EinsteinProblem\Release>
+```
+
 ## Future possibilities
 
 * I don't totally like the approach of trying different combinations. I think there's a more efficient way of solving the problem, one that starts by placing the fish in a particular house and applying the rules until one of them fails. If there is a failure, then the fish doesn't go in that house.
 
-## How to run
-
-I developed this code in Visual Studio 2019. The solution and project files are provided.
