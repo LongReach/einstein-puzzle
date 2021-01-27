@@ -2,6 +2,7 @@
 #include <time.h>
 #include <iostream>
 #include "House.h"
+#include "Street.h"
 #include "PuzzleMaker.h"
 
 PuzzleMaker::PuzzleMaker() {

@@ -143,11 +143,13 @@
     <ClCompile Include="House.cpp" />
     <ClCompile Include="PuzzleMaker.cpp" />
     <ClCompile Include="PuzzleSolver.cpp" />
+    <ClCompile Include="Street.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="House.h" />
     <ClInclude Include="PuzzleMaker.h" />
     <ClInclude Include="PuzzleSolver.h" />
+    <ClInclude Include="Street.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

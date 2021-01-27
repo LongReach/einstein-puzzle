@@ -2,6 +2,7 @@
 #include <regex>
 #include <stdlib.h>
 #include <iostream>
+#include "Street.h"
 #include "PuzzleSolver.h"
 
 using namespace std;
@@ -9,6 +10,7 @@ using namespace std;
 PuzzleSolver::PuzzleSolver() {
 	current_step = 0;
 	total_steps = 0;
+	verbose = false;
 }
 
 void PuzzleSolver::reset() {

@@ -8,6 +8,7 @@
 #include <vector>
 #include <set>
 #include "House.h"
+#include "Street.h"
 #include "PuzzleSolver.h"
 #include "PuzzleMaker.h"
 
