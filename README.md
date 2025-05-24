@@ -4,6 +4,10 @@ Solution to a riddle attributed to Einstein
 
 ![](images/EinsteinPuzzle.jpg)
 
+## 2025 Note
+
+To potential employers: I created this back in 2020, to aid in my job search at the time. My Python skills have improved a great deal since then.
+
 ## Purpose
 
 At first, it seemed like Python might have been a better choice for solving this problem. On my first pass, I cursed myself for choosing a language that was clunkier to work in than Python. (I picked C++ just to get a little practice, since it hadn't been my "main" language in a couple years.)
